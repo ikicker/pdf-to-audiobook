@@ -170,6 +170,7 @@ def main():
     print(f"Input PDF:  {pdf_path}")
     print(f"Output:     {output_path}")
 
+    print(f"Current working directory: {os.getcwd()}")
     # ─── Configure ffmpeg from config ───────────────────────────────
     ffmpeg_cfg = cfg.get("external_tools", {})
     if ffmpeg_path := ffmpeg_cfg.get("ffmpeg"):

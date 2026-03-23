@@ -24,9 +24,8 @@ class MainWindow(QWidget):
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.output_path_edit)
         self.setLayout(self.layout)
-        self.cfg = load_config("pyproject.toml")
+        self.cfg = load_config(config_path="pyproject.toml")
         default_output_path = self.cfg.get("paths", {}).get("output", "audiobook.mp3")
-        self.output_path_edit = QLineEdit()  # Create the text edit field
         self.output_path_edit.setText(default_output_path) # Set default value
         self.setup_ui()
 
@@ -144,6 +143,7 @@ class MainWindow(QWidget):
         file_path, _ = file_dialog.getSaveFileName(self, "Save Audio File", "", "Audio Files (*.mp3 *.wav)")
         if file_path:
             self.output_path = file_path
+            self.output_path_edit.setText(self.output_path) # Set default value
             self.status_label.setText(f"Output file set to: {file_path}")
 
     def start_conversion(self):
@@ -164,17 +164,30 @@ class MainWindow(QWidget):
         # Implement your PDF processing logic here
         # This is where you would call extract_text_from_pdf and other functions.
         # Use tqdm for the progress bar.  Update self.progress_bar.setValue()
+        command = [
+                "python",
+                "pdf_to_audiobook.py",
+                pdf_files[0],
+                output_path,
+                ]
+        print(command)
 
         self.status_label.setText("Converting...")
-        for i, pdf_file in enumerate(pdf_files):
-            try:
-                raw_text = extract_text_from_pdf(pdf_file) #Your function call
-                # ... process the text using your TTS engine ...
+#       for i, pdf_file in enumerate(pdf_files):
+#           try:
+#               raw_text = extract_text_from_pdf(pdf_file) #Your function call
+#               # ... process the text using your TTS engine ...
+#
+#               self.progress_bar.setValue((i + 1) * (100 / len(pdf_files)))  # Update progress bar
+#           except Exception as e:
+#               self.status_label.setText(f"Error processing {pdf_file}: {e}")
+#               return #Stop if an error occurs
 
-                self.progress_bar.setValue((i + 1) * (100 / len(pdf_files)))  # Update progress bar
-            except Exception as e:
-                self.status_label.setText(f"Error processing {pdf_file}: {e}")
-                return #Stop if an error occurs
+        try:
+            result = subprocess.run(command, capture_output=True, text=True, check=True)
+            print(result.stdout)  # Print the output from pdf-to-audiobook.py
+        except subprocess.CalledProcessError as e:
+            print(f"Error running pdf-to-audiobook.py: {e.stderr}")
 
         self.status_label.setText("Conversion finished!")
 
@@ -184,7 +197,7 @@ class MainWindow(QWidget):
         if ffmpeg_path := ffmpeg_cfg.get("ffmpeg"):
             if os.path.isfile(ffmpeg_path):
                 try:
-                    subprocess.run([ffmpeg_path, "-i", output_path, "-autoexit"], check=True) #Play the file and exit when done
+                    subprocess.run([ffmpeg_path, "-i", output_path], check=True) #Play the file and exit when done
                     print(f"Playing audio with ffmpeg: {output_path}")
                 except subprocess.CalledProcessError as e:
                     self.status_label.setText(f"Error playing audio with ffmpeg: {e}")
