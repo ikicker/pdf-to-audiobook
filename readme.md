@@ -63,3 +63,23 @@ This tool extracts text from PDFs, splits it into natural chunks, generates spee
 Recommended: create ./ffmpeg/bin/ in the project root and place ffmpeg.exe + ffprobe.exe there
 Or add them to your system PATH
 Update the paths in pyproject.toml if needed (under [tool.pdf-to-audiobook.external_tools])
+
+##How do you run it?
+1. Simplest
+  ```powershell
+  python pdf_to_audiobook.py "Biblical-Healing.pdf"
+
+2. Specify custom output
+  ```powershell
+  python pdf_to_audiobook.py "Biblical-Healing.pdf" "my-book.wav"
+  
+or
+
+  ```powershell
+  python pdf_to_audiobook.py "Biblical-Healing.pdf" "my-book-narration.mp3"
+
+
+3. Full path example
+
+  ```powershell
+  python pdf_to_audiobook.py "D:\Books\Biblical-Healing.pdf" "D:\Audiobooks\my-book.mp3"
