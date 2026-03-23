@@ -36,6 +36,9 @@ dev = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
 # ────────────────────────────────────────────────
 # Custom application settings (used by pdf_to_audiobook.py)
 # ────────────────────────────────────────────────
@@ -46,14 +49,29 @@ build-backend = "hatchling.build"
 output = "audiobook.mp3"           # default output filename
 
 [tool.pdf-to-audiobook.tts]
-engine = "kokoro"                  # or "parler"
+#engine = "parler"
+engine = "kokoro"
 voice = "af_heart"
-language_code = "a"
+lang_code = "a"
+voices = [
+	"af_heart",
+	"af_bella",
+	"af_nicole",
+	"af_sarah",
+	"af_sky",
+	"af_jessica",
+	"am_adam",
+	"am_michael",
+	"bf_emma",
+	"bf_isabella",
+	"bm_george",
+	"bm_lewis",
+]
 
 [tool.pdf-to-audiobook.processing]
 max_words_per_chunk = 350
 pause_between_chunks_sec = 0.6
 
 [tool.pdf-to-audiobook.external_tools]
-ffmpeg  = "./ffmpeg/bin/ffmpeg.exe"
-ffprobe = "./ffmpeg/bin/ffprobe.exe"
+ffmpeg  = "../Downloads/ffmpeg-8.1-essentials_build/bin/ffmpeg.exe"
+ffprobe = "../Downloads/ffmpeg-8.1-essentials_build/bin/ffprobe.exe"
