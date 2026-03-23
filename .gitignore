@@ -1,0 +1,18 @@
+# Binaries and large files
+ffmpeg/
+*.mp3
+*.wav
+*.pdf
+*.m4b
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment
+.venv/
+venv/
+env/
+fresh_audiobook_env/

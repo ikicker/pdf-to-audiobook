@@ -1,0 +1,17 @@
+[tool.pdf-to-audiobook]
+
+[tool.pdf-to-audiobook.paths]
+output = "output.mp3"
+
+[tool.pdf-to-audiobook.tts]
+engine = "kokoro"
+voice = "af_heart"
+language_code = "a"
+
+[tool.pdf-to-audiobook.processing]
+max_words_per_chunk = 350
+pause_between_chunks_sec = 0.6
+
+[tool.pdf-to-audiobook.external_tools]
+ffmpeg  = "./ffmpeg/bin/ffmpeg.exe"
+ffprobe = "./ffmpeg/bin/ffprobe.exe"

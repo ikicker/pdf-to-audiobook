@@ -1,0 +1,1 @@
+json { "version": "2.0.0", "tasks": [ { "label": "activate environment", "type": "shell", "command": "source .venv/bin/activate" } ] }
