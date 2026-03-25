@@ -1,8 +1,6 @@
 """
-pdf_to_audiobook.py
-
-Converts a PDF to an audiobook using Kokoro or Parler TTS.
-Configuration is read from pyproject.toml under [tool.pdf-to-audiobook]
+PDF to Audiobook Converter - OOP Version
+Can be imported and used externally
 """
 
 import argparse
@@ -12,36 +10,42 @@ import sys
 from pathlib import Path
 import numpy as np
 from tqdm import tqdm
-import soundfile as sf
 from pydub import AudioSegment
 import nltk
 from nltk.tokenize import sent_tokenize
 from pypdf import PdfReader
 import torch
 
-# Download NLTK data once
 nltk.download('punkt', quiet=True)
 nltk.download('punkt_tab', quiet=True)
 
 
-def load_config(config_path="pyproject.toml"):
-    """Load settings from pyproject.toml [tool.pdf-to-audiobook] section."""
-    if not os.path.isfile(config_path):
-        print(f"Config file not found: {config_path}", file=sys.stderr)
-        return {}
+class AudiobookConverter:
+    def __init__(self, config_path: str = "pyproject.toml"):
+        self.config = self._load_config(config_path)
+        self._setup_ffmpeg()
 
-    try:
-        with open(config_path, "rb") as f:
-            data = tomllib.load(f)
-    except tomllib.TOMLError as e:
-        raise ValueError(f"Invalid TOML in {config_path}: {e}") from e
+    def _load_config(self, config_path: str) -> dict:
+        """Load configuration from pyproject.toml"""
+        if not os.path.isfile(config_path):
+            print(f"Warning: Config file {config_path} not found. Using defaults.", file=sys.stderr)
+            return {}
 
-    config = data.get("tool", {}).get("pdf-to-audiobook", {})
-    if not config:
-        print(f"No [tool.pdf-to-audiobook] section found in {config_path}", file=sys.stderr)
+        try:
+            with open(config_path, "rb") as f:
+                data = tomllib.load(f)
+            return data.get("tool", {}).get("pdf-to-audiobook", {})
+        except Exception as e:
+            print(f"Error loading config from {config_path}: {e}", file=sys.stderr)
+            return {}
 
-    return config
+    def _setup_ffmpeg(self):
+        """Set up pydub with ffmpeg path from config"""
+        ffmpeg_cfg = self.config.get("external_tools", {})
+        ffmpeg_path = ffmpeg_cfg.get("ffmpeg")
+        ffprobe_path = ffmpeg_cfg.get("ffprobe")
 
+<<<<<<< Updated upstream
 
 def extract_text_from_pdf(pdf_path: str) -> str:
     reader = PdfReader(pdf_path)
@@ -176,56 +180,179 @@ def main():
     if ffmpeg_path := ffmpeg_cfg.get("ffmpeg"):
         if os.path.isfile(ffmpeg_path):
             print(f"Using ffmpeg: {ffmpeg_path}")
+=======
+        if ffmpeg_path and os.path.isfile(ffmpeg_path):
+>>>>>>> Stashed changes
             AudioSegment.converter = ffmpeg_path
             AudioSegment.ffmpeg = ffmpeg_path
-        else:
-            print(f"Warning: ffmpeg path not found: {ffmpeg_path}")
-    if ffprobe_path := ffmpeg_cfg.get("ffprobe"):
-        if os.path.isfile(ffprobe_path):
+            print(f"✅ Using ffmpeg: {ffmpeg_path}")
+        if ffprobe_path and os.path.isfile(ffprobe_path):
             AudioSegment.ffprobe = ffprobe_path
 
-    # Load TTS
-    tts = load_tts(cfg)
+    def pdf_to_audio(self, pdf_path: str, output_path: str = None, voice: str = None):
+        """
+        Main method to convert PDF to audiobook.
+        Can be called externally after importing the class.
 
-    print("Extracting text...")
-    raw_text = extract_text_from_pdf(pdf_path)
-    text = clean_text(raw_text)
-    print(f"Extracted ~{len(text.split())} words.")
+        Args:
+            pdf_path (str): Path to the input PDF file
+            output_path (str, optional): Output audio file path. Defaults to config value.
+            voice (str, optional): Voice to use (e.g. "af_heart", "am_adam"). Defaults to config value.
+        """
+        # Use defaults from config if not provided
+        if output_path is None:
+            output_path = self.config.get("paths", {}).get("output", "audiobook.mp3")
+        if voice is None:
+            voice = self.config.get("tts", {}).get("voice", "af_heart")
 
-    max_words = cfg.get("processing", {}).get("max_words_per_chunk", 350)
-    chunks = split_text_into_chunks(text, max_words=max_words)
-    print(f"Split into {len(chunks)} chunks.")
+        self.pdf_path = pdf_path
+        self.output_path = output_path
+        self.voice = voice
 
-    print("Generating audio...")
-    audio_segments = []
-    pause_sec = cfg.get("processing", {}).get("pause_between_chunks_sec", 0.6)
-    pause_ms = int(pause_sec * 1000)
+        print(f"\nStarting conversion:")
+        print(f"   PDF:     {self.pdf_path}")
+        print(f"   Output:  {self.output_path}")
+        print(f"   Voice:   {self.voice}\n")
 
-    for chunk in tqdm(chunks, desc="Generating"):
-        if not chunk.strip():
-            continue
-        audio_np, sr = generate_audio_chunk(tts, chunk)
-        if len(audio_np) > 0:
-            segment = numpy_to_audio_segment(audio_np, sr)
-            audio_segments.append(segment)
-            audio_segments.append(AudioSegment.silent(duration=pause_ms))
+        # Load TTS engine
+        self._load_tts()
 
-    if not audio_segments:
-        print("No audio generated – check input text or TTS model.")
-        return
+        # Extract and process text
+        print("Extracting text from PDF...")
+        raw_text = self._extract_text()
+        text = self._clean_text(raw_text)
+        print(f"Extracted ~{len(text.split())} words.")
 
-    print("Combining audio...")
-    final_audio = sum(audio_segments, AudioSegment.empty())
+        max_words = self.config.get("processing", {}).get("max_words_per_chunk", 350)
+        chunks = self._split_into_chunks(text, max_words)
+        print(f"Split into {len(chunks)} chunks.")
 
-    out_path = Path(output_path)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
+        # Generate audio
+        print("Generating audio...")
+        audio_segments = []
+        pause_sec = self.config.get("processing", {}).get("pause_between_chunks_sec", 0.6)
+        pause_ms = int(pause_sec * 1000)
 
-    fmt = "wav" if out_path.suffix.lower() == ".wav" else "mp3"
-    final_audio.export(str(out_path), format=fmt, bitrate="192k" if fmt == "mp3" else None)
+        for chunk in tqdm(chunks, desc="Generating"):
+            if not chunk.strip():
+                continue
+            audio_np, sr = self._generate_audio_chunk(chunk)
+            if len(audio_np) > 0:
+                segment = self._numpy_to_audio_segment(audio_np, sr)
+                audio_segments.append(segment)
+                audio_segments.append(AudioSegment.silent(duration=pause_ms))
 
-    print(f"Audiobook saved: {out_path}")
-    print(f"Duration: {len(final_audio)/1000:.1f} seconds")
+        if not audio_segments:
+            print("❌ No audio generated.")
+            return
+
+        print("Combining audio...")
+        final_audio = sum(audio_segments, AudioSegment.empty())
+
+        # Save final file
+        out_path = Path(self.output_path)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+
+        fmt = "wav" if out_path.suffix.lower() == ".wav" else "mp3"
+        final_audio.export(str(out_path), format=fmt, bitrate="192k" if fmt == "mp3" else None)
+
+        print(f"\n✅ Success! Audiobook saved to: {out_path}")
+        print(f"   Duration: {len(final_audio)/1000:.1f} seconds")
+
+    # ==================== Internal Helper Methods ====================
+
+    def _load_tts(self):
+        tts_section = self.config.get("tts", {})
+        engine = tts_section.get("engine", "kokoro").lower()
+
+        if engine == "kokoro":
+            from kokoro import KPipeline
+            lang_code = tts_section.get("language_code", "a")
+            pipeline = KPipeline(lang_code=lang_code)
+            self.tts = {
+                "engine": "kokoro",
+                "pipeline": pipeline,
+                "voice": self.voice,
+                "sr": 24000
+            }
+        else:
+            raise ValueError(f"Unsupported TTS engine: {engine}")
+
+    def _extract_text(self) -> str:
+        reader = PdfReader(self.pdf_path)
+        text = ""
+        for page in reader.pages:
+            text += (page.extract_text() or "") + "\n\n"
+        return text.strip()
+
+    def _clean_text(self, text: str) -> str:
+        lines = text.splitlines()
+        cleaned = [line.strip() for line in lines if line.strip() and not line.strip().isdigit()]
+        return " ".join(cleaned).replace("  ", " ")
+
+    def _split_into_chunks(self, text: str, max_words: int = 350) -> list[str]:
+        sentences = sent_tokenize(text)
+        chunks = []
+        current = []
+        count = 0
+
+        for sentence in sentences:
+            words = len(sentence.split())
+            if count + words > max_words and current:
+                chunks.append(" ".join(current))
+                current = []
+                count = 0
+            current.append(sentence)
+            count += words
+
+        if current:
+            chunks.append(" ".join(current))
+        return chunks
+
+    def _generate_audio_chunk(self, text_chunk: str):
+        if self.tts["engine"] == "kokoro":
+            audio_pieces = []
+            for _, _, audio in self.tts["pipeline"](text_chunk, voice=self.tts["voice"]):
+                if len(audio) > 0:
+                    audio_pieces.append(audio)
+            if audio_pieces:
+                return np.concatenate(audio_pieces), self.tts["sr"]
+            return np.array([]), self.tts["sr"]
+
+    def _numpy_to_audio_segment(self, audio_array: np.ndarray, sample_rate: int) -> AudioSegment:
+        if audio_array.ndim > 1:
+            audio_array = np.mean(audio_array, axis=1)
+        audio_array = np.clip(audio_array, -1.0, 1.0).astype(np.float32)
+        int_array = (audio_array * 32767).astype(np.int16)
+        return AudioSegment(
+            data=int_array.tobytes(),
+            sample_width=2,
+            frame_rate=sample_rate,
+            channels=1
+        )
 
 
+# ====================== CLI Entry Point ======================
 if __name__ == "__main__":
+<<<<<<< Updated upstream
     main()
+=======
+    converter = AudiobookConverter()
+
+    parser = argparse.ArgumentParser(description="PDF to Audiobook Converter")
+    parser.add_argument("pdf", type=str, nargs="?", help="Path to input PDF")
+    parser.add_argument("out", type=str, nargs="?", help="Output audio file")
+    parser.add_argument("--voice", type=str, help="Voice to use (e.g. af_heart, am_adam)")
+    args = parser.parse_args()
+
+    if args.pdf:
+        # CLI mode
+        converter.pdf_to_audio(pdf_path=args.pdf, output_path=args.out, voice=args.voice)
+    else:
+        # Interactive mode
+        converter.pdf_to_audio(
+            pdf_path=input("Enter PDF path: ").strip(),
+            output_path=input("Enter output filename: ").strip() or None,
+            voice=input("Enter voice (e.g. af_heart): ").strip() or None
+        )
+>>>>>>> Stashed changes
