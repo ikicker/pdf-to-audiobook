@@ -1,0 +1,98 @@
+Okay, here's a detailed specification for a PDF to Sounds Conversion Application GUI using PySide6 and Python, based on your requirements.  This will cover layout, functionality, widgets, and considerations. I'll break it down into sections: Overall Structure, Table 1 (File-Based), Table 2 (Folder-Based), Voice Selection, Language Selection, Error Handling/Feedback, and Technical Considerations.
+
+**I. Overall Structure & General Principles**
+
+*   **Main Window:** The application will be centered around a main window (`QMainWindow`).
+*   **Layout:**  A central widget containing tabs for the two table modes (File-Based and Folder-Based). A top menu bar with options like "File" (Open, Save Settings), "Help" (About) is recommended.
+*   **Tabs:** Two tabs: "Single File Conversion" and "Batch Conversion".
+*   **Clean Design:**  Prioritize a clear, intuitive layout. Use labels effectively to explain each field/button.
+*   **Responsiveness:** The GUI should be responsive; buttons should provide visual feedback on clicks (e.g., pressed state).
+
+
+
+**II. Table 1: Single File Conversion**
+
+This table handles converting individual PDF files.
+
+| Column Header | Widget Type        | Functionality                                                                | Notes                                                                 |
+|---------------|--------------------|------------------------------------------------------------------------------|-----------------------------------------------------------------------|
+| **Input PDF**    | `QFileDialog` Button + `QLineEdit` (read-only) | Opens a file dialog to select a PDF file. Displays the selected path in the line edit.|  Use `QFileDialog.getOpenFileName()` with filter for `.pdf` files.   |
+| **Voice Choice** | `QComboBox`        | Allows selecting a voice from a predefined list (populated by Voice Selection - see section IV). | The currently chosen voice is displayed.                          |
+| **Output Sound**  | `QFileDialog` Button + `QLineEdit` (read-only) | Opens a file dialog to save the output sound file. Displays selected path.| Use `QFileDialog.getSaveFileName()` with filter for `.wav`, `.mp3`, etc. |
+| **Launch Conversion** | `QPushButton`     | Triggers the PDF to Sound conversion process for *that row*.              |  Disable until Input PDF and Voice Choice are valid.                 |
+| **Launch Sound**   | `QPushButton`      | Plays the generated sound file associated with *that row*.                   | Disable until Output Sound is valid and Conversion has completed.     |
+
+*   **Table Widget:** Use a `QTableWidget`.  Set it to allow row reordering (using `tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)`).
+*   **Add/Remove Rows:** Buttons ("Add Row", "Remove Row") below the table for adding and deleting conversion entries.
+*   **Row Validation:** The "Launch Conversion" button should be disabled if either the Input PDF or Voice Choice is empty/invalid.  The "Launch Sound" button should be disabled until a valid output file path exists *and* the conversion has finished successfully.
+
+**III. Table 2: Batch Conversion (Folder-Based)**
+
+This table handles converting all PDFs within a specified folder.
+
+| Column Header | Widget Type        | Functionality                                                                | Notes                                                                 |
+|---------------|--------------------|------------------------------------------------------------------------------|-----------------------------------------------------------------------|
+| **Input Folder** | `QFileDialog` Button + `QLineEdit` (read-only) | Opens a file dialog to select an input folder. Displays the selected path.| Use `QFileDialog.getExistingDirectory()`.                           |
+| **Voice Chosen** | `QComboBox`        | Allows selecting a voice from a predefined list (populated by Voice Selection - see section IV). | The currently chosen voice is displayed.                          |
+| **Launch Conversions** | `QPushButton`     | Triggers the PDF to Sound conversion process for *all PDFs* in the selected folder.| Disable until Input Folder and Voice Choice are valid.                 |
+| **Output Folder** | `QFileDialog` Button + `QLineEdit` (read-only) | Opens a file dialog to select an output folder. Displays selected path.| Use `QFileDialog.getExistingDirectory()`.                           |
+| **Launch Sounds**   | `QPushButton`      | Plays the generated sound files in the output folder.                   | Disable until Output Folder is valid and Conversion has completed.     |
+
+*   **Table Widget:**  Use a `QTableWidget`. Set it to allow row reordering (using `tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)`).
+*   **Add/Remove Rows:** Buttons ("Add Row", "Remove Row") below the table for adding and deleting conversion entries.
+*   **Row Validation:** Similar validation as Table 1, but applied to Input Folder and Voice Choice for "Launch Conversions".  "Launch Sounds" disabled until Output Folder is valid *and* conversions are complete.
+
+**IV. Voice Selection**
+
+*   **Widget:** `QComboBox` (as used in the tables).
+*   **Population:** The list of voices should be dynamically populated from a configuration file or system API call (e.g., using a text-to-speech library like `pyttsx3`).  The application needs to determine available voices at startup and populate the combo box accordingly.
+*   **Chosen Voice Display:** The currently selected voice is displayed in the `QComboBox`.
+*   **Voice Preview (Optional):** A "Preview" button next to the `QComboBox` could play a short sample of the chosen voice saying a default phrase.
+
+**V. Language Selection**
+
+*   **Widget:** `QComboBox`
+*   **Population:** Populate with supported languages for text-to-speech.  This will depend on the TTS library used (e.g., `pyttsx3`).
+*   **Default Language:** Set a default language at startup.
+*   **Integration:** The selected language should be passed to the PDF conversion function when generating speech.
+
+**VI. Error Handling/Feedback**
+
+*   **Conversion Progress:**  A `QProgressBar` to show the progress of individual file conversions or batch processing.
+*   **Status Bar:** A `QStatusBar` at the bottom of the main window to display messages:
+    *   "Conversion started..."
+    *   "File X converted successfully."
+    *   "Error converting File Y: [error message]"
+    *   "Batch conversion completed with X errors."
+*   **Exception Handling:**  Wrap the PDF conversion process in `try...except` blocks to catch potential errors (e.g., file not found, invalid PDF format, TTS engine error). Display informative error messages in the status bar or a dedicated dialog box (`QMessageBox`).
+*   **File Existence Check:** Before launching conversions, check if input files/folders exist and are accessible.
+
+**VII. Technical Considerations & Python/PySide6 Implementation Notes**
+
+*   Parsing PDF and conversion to audio will be done like this:
+	from pdf_to_audiobook import AudiobookConverter
+
+	converter = AudiobookConverter()
+
+	# Call the method directly with parameters
+	converter.pdf_to_audio(
+	    pdf_path="Biblical-Healing.pdf",
+	    output_path="my_audiobook.mp3",
+	    voice="am_adam"          # optional - will use default from toml if None
+	)
+*   **Threading:** *Crucially*, perform the PDF conversion process in a separate thread to prevent blocking the GUI. Use `QThread` and signals/slots to communicate progress updates back to the main thread.  This is essential for responsiveness.
+*   **Signals & Slots:** PySide6's signal/slot mechanism is used for communication between widgets (e.g., button clicks triggering conversion functions) and threads (e.g., reporting conversion progress).
+*   **Settings Management:** Use `QSettings` to save user preferences (last selected input folders, voices, languages, window size/position).
+*   **File Paths:**  Use absolute file paths consistently.
+*   **Code Structure:** Organize your code into classes for the main window, table models, conversion functions, and voice selection logic. This will improve maintainability.
+
+**Further Considerations:**
+
+*   **Output File Naming:**  Allow customization of output file names (e.g., based on the input PDF name).
+*   **Advanced TTS Options:** Consider adding options for controlling speech rate, volume, pitch, etc.
+*   **PDF Page Selection:** Allow converting specific pages from a PDF instead of the entire document.
+*   **Multi-threading Queue:** For batch conversions, use a queue to manage conversion tasks and process them sequentially in separate threads. This prevents overwhelming the TTS engine.
+
+
+
+This specification provides a solid foundation for building your PDF to Sounds Conversion application with PySide6 and Python.  Remember to prioritize user experience, error handling, and code organization throughout the development process. Good luck!
