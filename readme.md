@@ -65,21 +65,14 @@ Or add them to your system PATH
 Update the paths in pyproject.toml if needed (under [tool.pdf-to-audiobook.external_tools])
 
 ##How do you run it?
-1. Simplest
-  ```powershell
-  python pdf_to_audiobook.py "Biblical-Healing.pdf"
+```python
+from pdf_to_audiobook import AudiobookConverter
 
-2. Specify custom output
-  ```powershell
-  python pdf_to_audiobook.py "Biblical-Healing.pdf" "my-book.wav"
-  
-or
+converter = AudiobookConverter()
 
-  ```powershell
-  python pdf_to_audiobook.py "Biblical-Healing.pdf" "my-book-narration.mp3"
-
-
-3. Full path example
-
-  ```powershell
-  python pdf_to_audiobook.py "D:\Books\Biblical-Healing.pdf" "D:\Audiobooks\my-book.mp3"
+# Call the method directly with parameters
+converter.pdf_to_audio(
+    pdf_path="Biblical-Healing.pdf",
+    output_path="my_audiobook.mp3",
+    voice="am_adam"          # optional - will use default from toml if None
+)
