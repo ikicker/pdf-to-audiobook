@@ -251,19 +251,18 @@ class SingleFileConversionTable(BaseConversionTable):
             QMessageBox.critical(self.main_window, "Error", f"Could not play sound file: {e}")
 
         # Play the sound file using ffplay after conversion
-        #cfg = self.converter._load_config(config_path="pyproject.toml")
-        #ffplay_cfg = cfg.get("external_tools", {})
-        #if ffplay_path := ffplay_cfg.get("ffplay"):
-        #    if os.path.isfile(ffplay_path):
-        #        try:
-        #            print([ffplay_path, "-i", output_sound])
-        #            print(f"Playing audio with ffplay: {output_sound}")
-        #            subprocess.run([ffplay_path, "-i", output_sound], check=True) #Play the file and exit when done
-        #            print(f"Done playing audio with ffplay: {output_sound}")
-        #        except subprocess.CalledProcessError as e:
-        #            self.main_window.statusBar().showMessage(f"Error playing audio with ffplay: {e}")
-        #    else:
-        #        self.main_window.statusBar().showMessage(f"Warning: ffplay path not found in config: {ffplay_path}")
+        cfg = load_config(config_path="pyproject.toml")
+        ffplay_path = cfg["ffplay"]
+        if os.path.isfile(ffplay_path):
+            try:
+                print([ffplay_path, "-i", output_sound])
+                print(f"Playing audio with ffplay: {output_sound}")
+                subprocess.run([ffplay_path, "-i", output_sound], check=True) #Play the file and exit when done
+                print(f"Done playing audio with ffplay: {output_sound}")
+            except subprocess.CalledProcessError as e:
+                self.main_window.statusBar().showMessage(f"Error playing audio with ffplay: {e}")
+        else:
+            self.main_window.statusBar().showMessage(f"Warning: ffplay path not found in config: {ffplay_path}")
 
 def load_config(config_path: str = "pyproject.toml") -> Dict[str, Any]:
     """Load configuration from pyproject.toml under [tool.pdf-to-audiobook]"""
