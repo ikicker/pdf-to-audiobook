@@ -1,6 +1,6 @@
-import os
 import sys
 import subprocess
+import os
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                                QPushButton, QLabel, QLineEdit, QTableWidget,
                                QTableWidgetItem, QFileDialog, QComboBox,
@@ -9,11 +9,10 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QAction
 
-# Assuming pdf_to_audiobook is installed and accessible
-# from pdf_to_audiobook import AudiobookConverter
+from PDF_to_Audiobook import AudiobookConverter
 
 # Mock list of voices and languages (replace with actual dynamic population later)
-AVAILABLE_VOICES =["Default Voice", "am_adam", "am_echo", "am_onyx", "am_nova"]
+# AVAILABLE_VOICES =["Default Voice", "am_adam", "am_echo", "am_onyx", "am_nova"]
 AVAILABLE_LANGUAGES =["en-US", "en-GB", "es-ES", "fr-FR", "de-DE"]
 
 class ConversionWorker(QThread):
@@ -31,28 +30,22 @@ class ConversionWorker(QThread):
         self.voice = voice
         self.language = language
         self.is_batch = is_batch
-        # self.converter = AudiobookConverter()
+        self.converter = AudiobookConverter()
 
     def run(self):
         try:
             # --- MOCK CONVERSION PROCESS ---
             # Replace the sleep and loop with actual library calls
-            import time
-            for i in range(1, 101, 20):
-                time.sleep(0.5) # Simulate work
-                self.progress_update.emit(i)
+            #import time
+            #for i in range(1, 101, 20):
+            #    time.sleep(0.5) # Simulate work
+            #    self.progress_update.emit(i)
             
-            # Actual conversion code would look like this:
-            # if self.is_batch:
-            #     # Logic to iterate over folder and convert all pdfs
-            #     pass
-            # else:
-            #     self.converter.pdf_to_audio(
-            #         pdf_path=self.input_path,
-            #         output_path=self.output_path,
-            #         voice=self.voice,
-            #         language=self.language
-            #     )
+            if self.is_batch:
+                # Logic to iterate over folder and convert all pdfs
+                pass
+            else:
+                self.converter.pdf_to_audio(pdf_path=self.input_path, output_path=self.output_path, voice=self.voice)
             
             self.finished_signal.emit() # Signal completion
         except Exception as e:
@@ -107,6 +100,7 @@ class BaseConversionTable(QWidget):
     """
     def __init__(self, main_window):
         super().__init__()
+        self.converter = AudiobookConverter()
         self.main_window = main_window
 
         self.tableWidget = QTableWidget()
@@ -160,7 +154,10 @@ class SingleFileConversionTable(BaseConversionTable):
         
         # 2. Voice Choice (QComboBox)
         voice_combo = QComboBox()
-        voice_combo.addItems(AVAILABLE_VOICES)
+        self.cfg = self.converter._load_config(config_path="pyproject.toml")
+        tts_section = self.cfg.get("tool", {}).get("pdf-to-audiobook", {}).get("tts", {}) # Navigate to the tts section safely
+        voices = tts_section.get("voices", ["af_heart"])  # Default voices list
+        voice_combo.addItems(voices)
         
         # 3. Output Sound (PathSelectionWidget)
         output_widget = PathSelectionWidget("file_save", "Audio Files (*.mp3 *.wav)")
@@ -266,7 +263,10 @@ class BatchConversionTable(BaseConversionTable):
         
         # 2. Voice Choice
         voice_combo = QComboBox()
-        voice_combo.addItems(AVAILABLE_VOICES)
+        self.cfg = self.converter._load_config(config_path="pyproject.toml")
+        tts_section = self.cfg.get("tool", {}).get("pdf-to-audiobook", {}).get("tts", {}) # Navigate to the tts section safely
+        voices = tts_section.get("voices", ["af_heart"])  # Default voices list
+        voice_combo.addItems(voices)
         
         # 3. Launch Conversions Button
         launch_conversion_btn = QPushButton("Launch All")
