@@ -255,9 +255,9 @@ class SingleFileConversionTable(BaseConversionTable):
                     subprocess.run([ffmpeg_path, "-i", output_sound], check=True) #Play the file and exit when done
                     print(f"Playing audio with ffmpeg: {output_sound}")
                 except subprocess.CalledProcessError as e:
-                    self.status_label.setText(f"Error playing audio with ffmpeg: {e}")
+                    self.main_window.statusBar().showMessage(f"Error playing audio with ffmpeg: {e}")
             else:
-                self.status_label.setText(f"Warning: ffmpeg path not found in config: {ffmpeg_path}")
+                self.main_window.statusBar().showMessage(f"Warning: ffmpeg path not found in config: {ffmpeg_path}")
 
 class BatchConversionTable(BaseConversionTable):
     def __init__(self, main_window):
