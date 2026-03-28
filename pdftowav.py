@@ -144,6 +144,7 @@ class SingleFileConversionTable(BaseConversionTable):
         self.tableWidget.setColumnCount(5)
         self.tableWidget.setHorizontalHeaderLabels(["Input PDF", "Voice Choice", "Output Sound", "Launch Conversion", "Launch Sound"]
         )
+        self.converter = AudiobookConverter()
 
     def add_row(self):
         row_count = self.tableWidget.rowCount()
@@ -235,16 +236,28 @@ class SingleFileConversionTable(BaseConversionTable):
             QMessageBox.warning(self.main_window, "Warning", "Invalid output file path or file does not exist.")
             return
 
-        try:
-            if sys.platform == "win32":
-                os.startfile(output_sound)
-            elif sys.platform == "darwin":
-                subprocess.call(["open", output_sound])
-            else:
-                subprocess.call(["xdg-open", output_sound])
-        except Exception as e:
-            QMessageBox.critical(self.main_window, "Error", f"Could not play sound file: {e}")
+        #try:
+        #    if sys.platform == "win32":
+        #        os.startfile(output_sound)
+        #    elif sys.platform == "darwin":
+        #        subprocess.call(["open", output_sound])
+        #    else:
+        #        subprocess.call(["xdg-open", output_sound])
+        #except Exception as e:
+        #    QMessageBox.critical(self.main_window, "Error", f"Could not play sound file: {e}")
 
+        # Play the sound file using ffmpeg after conversion
+        cfg = self.converter._load_config(config_path="pyproject.toml")
+        ffmpeg_cfg = cfg.get("external_tools", {})
+        if ffmpeg_path := ffmpeg_cfg.get("ffmpeg"):
+            if os.path.isfile(ffmpeg_path):
+                try:
+                    subprocess.run([ffmpeg_path, "-i", output_sound], check=True) #Play the file and exit when done
+                    print(f"Playing audio with ffmpeg: {output_sound}")
+                except subprocess.CalledProcessError as e:
+                    self.status_label.setText(f"Error playing audio with ffmpeg: {e}")
+            else:
+                self.status_label.setText(f"Warning: ffmpeg path not found in config: {ffmpeg_path}")
 
 class BatchConversionTable(BaseConversionTable):
     def __init__(self, main_window):
