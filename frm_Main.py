@@ -246,26 +246,20 @@ class SingleFileConversionTable(BaseConversionTable):
         #except Exception as e:
         #    QMessageBox.critical(self.main_window, "Error", f"Could not play sound file: {e}")
 
-        # Play the sound file using ffmpeg after conversion
+        # Play the sound file using ffplay after conversion
         cfg = self.converter._load_config(config_path="pyproject.toml")
-        ffmpeg_cfg = cfg.get("external_tools", {})
-        if ffmpeg_path := ffmpeg_cfg.get("ffmpeg"):
-            if os.path.isfile(ffmpeg_path):
+        ffplay_cfg = cfg.get("external_tools", {})
+        if ffplay_path := ffplay_cfg.get("ffplay"):
+            if os.path.isfile(ffplay_path):
                 try:
-                    print([ffmpeg_path, "-i", output_sound])
-                    #subprocess.run([ffmpeg_path, "-i", output_sound], check=True) #Play the file and exit when done
-                    print(f"Playing audio with ffmpeg: {output_sound}")
-                    if sys.platform == "win32":
-                        subprocess.run([ffmpeg_path, "-i", output_sound, "-f", "null", "NUL"], check=True   )
-                    elif sys.platform == "darwin":
-                        subprocess.run([ffmpeg_path, "-i", output_sound, "-f", "null", "/dev/null"], check=True)
-                    else:  # Linux and other Unix-like systems
-                        subprocess.run([ffmpeg_path, "-i", output_sound, "-f", "null", "/dev/null"], check=True)
-                    print(f"Done playing audio with ffmpeg: {output_sound}")
+                    print([ffplay_path, "-i", output_sound])
+                    print(f"Playing audio with ffplay: {output_sound}")
+                    subprocess.run([ffplay_path, "-i", output_sound], check=True) #Play the file and exit when done
+                    print(f"Done playing audio with ffplay: {output_sound}")
                 except subprocess.CalledProcessError as e:
-                    self.main_window.statusBar().showMessage(f"Error playing audio with ffmpeg: {e}")
+                    self.main_window.statusBar().showMessage(f"Error playing audio with ffplay: {e}")
             else:
-                self.main_window.statusBar().showMessage(f"Warning: ffmpeg path not found in config: {ffmpeg_path}")
+                self.main_window.statusBar().showMessage(f"Warning: ffplay path not found in config: {ffplay_path}")
 
 class BatchConversionTable(BaseConversionTable):
     def __init__(self, main_window):
