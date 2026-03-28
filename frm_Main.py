@@ -252,8 +252,16 @@ class SingleFileConversionTable(BaseConversionTable):
         if ffmpeg_path := ffmpeg_cfg.get("ffmpeg"):
             if os.path.isfile(ffmpeg_path):
                 try:
-                    subprocess.run([ffmpeg_path, "-i", output_sound], check=True) #Play the file and exit when done
+                    print([ffmpeg_path, "-i", output_sound])
+                    #subprocess.run([ffmpeg_path, "-i", output_sound], check=True) #Play the file and exit when done
                     print(f"Playing audio with ffmpeg: {output_sound}")
+                    if sys.platform == "win32":
+                        subprocess.run([ffmpeg_path, "-i", output_sound, "-f", "null", "NUL"], check=True   )
+                    elif sys.platform == "darwin":
+                        subprocess.run([ffmpeg_path, "-i", output_sound, "-f", "null", "/dev/null"], check=True)
+                    else:  # Linux and other Unix-like systems
+                        subprocess.run([ffmpeg_path, "-i", output_sound, "-f", "null", "/dev/null"], check=True)
+                    print(f"Done playing audio with ffmpeg: {output_sound}")
                 except subprocess.CalledProcessError as e:
                     self.main_window.statusBar().showMessage(f"Error playing audio with ffmpeg: {e}")
             else:
