@@ -17,6 +17,7 @@ dependencies = [
     "soundfile>=0.12",
     "pydub>=0.25",
     "kokoro>=0.9.4",            # main TTS engine
+    "PySide6"
     # torch is intentionally not pinned here because users often choose CPU vs CUDA version
     # see installation instructions in README.md for torch install
 ]
@@ -73,5 +74,6 @@ max_words_per_chunk = 350
 pause_between_chunks_sec = 0.6
 
 [tool.pdf-to-audiobook.external_tools]
-ffmpeg  = "../Downloads/ffmpeg-8.1-essentials_build/bin/ffmpeg.exe"
-ffprobe = "../Downloads/ffmpeg-8.1-essentials_build/bin/ffprobe.exe"
+ffmpeg  = ".\ffmpeg\bin\ffmpeg.exe"
+ffprobe = ".\ffmpeg\bin\ffprobe.exe"
+ffplay = ".\ffmpeg\bin\ffplay.exe"

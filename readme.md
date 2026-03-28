@@ -1,4 +1,5 @@
 # PDF to Audiobook Converter
+Support development of this project: ko-fi.com/michael2281
 
 Convert PDF documents into high-quality MP3 or WAV audiobooks using **Kokoro TTS** (recommended) or **Parler-TTS**.
 
