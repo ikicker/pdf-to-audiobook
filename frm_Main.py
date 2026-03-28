@@ -10,6 +10,9 @@ from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QAction
 
 from PDF_to_Audiobook import AudiobookConverter
+import tomllib
+from pathlib import Path
+from typing import Dict, Any
 
 # Mock list of voices and languages (replace with actual dynamic population later)
 # AVAILABLE_VOICES =["Default Voice", "am_adam", "am_echo", "am_onyx", "am_nova"]
@@ -154,10 +157,11 @@ class SingleFileConversionTable(BaseConversionTable):
         input_widget = PathSelectionWidget("file_open", "PDF Files (*.pdf)")
         
         # 2. Voice Choice (QComboBox)
+        self.cfg = load_config(config_path="pyproject.toml")
+        voices = self.cfg["voices"]
+        print(voices)
+
         voice_combo = QComboBox()
-        self.cfg = self.converter._load_config(config_path="pyproject.toml")
-        tts_section = self.cfg.get("tool", {}).get("pdf-to-audiobook", {}).get("tts", {}) # Navigate to the tts section safely
-        voices = tts_section.get("voices", ["af_heart"])  # Default voices list
         voice_combo.addItems(voices)
         
         # 3. Output Sound (PathSelectionWidget)
@@ -236,30 +240,71 @@ class SingleFileConversionTable(BaseConversionTable):
             QMessageBox.warning(self.main_window, "Warning", "Invalid output file path or file does not exist.")
             return
 
-        #try:
-        #    if sys.platform == "win32":
-        #        os.startfile(output_sound)
-        #    elif sys.platform == "darwin":
-        #        subprocess.call(["open", output_sound])
-        #    else:
-        #        subprocess.call(["xdg-open", output_sound])
-        #except Exception as e:
-        #    QMessageBox.critical(self.main_window, "Error", f"Could not play sound file: {e}")
+        try:
+            if sys.platform == "win32":
+                os.startfile(output_sound)
+            elif sys.platform == "darwin":
+                subprocess.call(["open", output_sound])
+            else:
+                subprocess.call(["xdg-open", output_sound])
+        except Exception as e:
+            QMessageBox.critical(self.main_window, "Error", f"Could not play sound file: {e}")
 
         # Play the sound file using ffplay after conversion
-        cfg = self.converter._load_config(config_path="pyproject.toml")
-        ffplay_cfg = cfg.get("external_tools", {})
-        if ffplay_path := ffplay_cfg.get("ffplay"):
-            if os.path.isfile(ffplay_path):
-                try:
-                    print([ffplay_path, "-i", output_sound])
-                    print(f"Playing audio with ffplay: {output_sound}")
-                    subprocess.run([ffplay_path, "-i", output_sound], check=True) #Play the file and exit when done
-                    print(f"Done playing audio with ffplay: {output_sound}")
-                except subprocess.CalledProcessError as e:
-                    self.main_window.statusBar().showMessage(f"Error playing audio with ffplay: {e}")
-            else:
-                self.main_window.statusBar().showMessage(f"Warning: ffplay path not found in config: {ffplay_path}")
+        #cfg = self.converter._load_config(config_path="pyproject.toml")
+        #ffplay_cfg = cfg.get("external_tools", {})
+        #if ffplay_path := ffplay_cfg.get("ffplay"):
+        #    if os.path.isfile(ffplay_path):
+        #        try:
+        #            print([ffplay_path, "-i", output_sound])
+        #            print(f"Playing audio with ffplay: {output_sound}")
+        #            subprocess.run([ffplay_path, "-i", output_sound], check=True) #Play the file and exit when done
+        #            print(f"Done playing audio with ffplay: {output_sound}")
+        #        except subprocess.CalledProcessError as e:
+        #            self.main_window.statusBar().showMessage(f"Error playing audio with ffplay: {e}")
+        #    else:
+        #        self.main_window.statusBar().showMessage(f"Warning: ffplay path not found in config: {ffplay_path}")
+
+def load_config(config_path: str = "pyproject.toml") -> Dict[str, Any]:
+    """Load configuration from pyproject.toml under [tool.pdf-to-audiobook]"""
+    path = Path(config_path)
+
+    if not path.exists():
+        raise FileNotFoundError(f"Configuration file not found: {path}")
+
+    with open(path, "rb") as f:
+        data = tomllib.load(f)
+
+    # Navigate safely to the custom tool section
+    app_config = data.get("tool", {}).get("pdf-to-audiobook", {})
+    dropdowns_config = data.get("dropdowns", {})
+
+    # Extract different sections
+    tts_config = app_config.get("tts", {})
+    paths_config = app_config.get("paths", {})
+    processing_config = app_config.get("processing", {})
+    external_tools = app_config.get("external_tools", {})
+
+    config = {
+        "voices": dropdowns_config.get("voices", []),
+        "engine": tts_config.get("engine", "kokoro"),
+        "default_voice": tts_config.get("voice", "af_heart"),
+        "lang_code": tts_config.get("lang_code", "a"),
+
+        "output_path": paths_config.get("output", "audiobook.mp3"),
+
+        "max_words_per_chunk": processing_config.get("max_words_per_chunk", 350),
+        "pause_between_chunks_sec": processing_config.get("pause_between_chunks_sec", 0.6),
+
+        # ffmpeg paths
+        "ffmpeg": external_tools.get("ffmpeg", "./ffmpeg/bin/ffmpeg.exe"),
+        "ffprobe": external_tools.get("ffprobe", "./ffmpeg/bin/ffprobe.exe"),
+        "ffplay": external_tools.get("ffplay", "./ffmpeg/bin/ffplay.exe"),
+
+        # You can add more sections here later
+    }
+
+    return config
 
 class BatchConversionTable(BaseConversionTable):
     def __init__(self, main_window):
@@ -269,6 +314,7 @@ class BatchConversionTable(BaseConversionTable):
         self.tableWidget.setHorizontalHeaderLabels(["Input Folder", "Voice Chosen", "Launch Conversions", "Output Folder", "Launch Sounds"]
         )
 
+
     def add_row(self):
         row_count = self.tableWidget.rowCount()
         self.tableWidget.insertRow(row_count)
@@ -277,10 +323,11 @@ class BatchConversionTable(BaseConversionTable):
         input_widget = PathSelectionWidget("directory")
         
         # 2. Voice Choice
+        self.cfg = load_config(config_path="pyproject.toml")
+        voices = self.cfg["voices"]
+        print(voices)
+
         voice_combo = QComboBox()
-        self.cfg = self.converter._load_config(config_path="pyproject.toml")
-        tts_section = self.cfg.get("tool", {}).get("pdf-to-audiobook", {}).get("tts", {}) # Navigate to the tts section safely
-        voices = tts_section.get("voices", ["af_heart"])  # Default voices list
         voice_combo.addItems(voices)
         
         # 3. Launch Conversions Button
