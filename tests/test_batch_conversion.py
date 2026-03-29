@@ -1,3 +1,4 @@
+import pytest
 import unittest
 from unittest.mock import patch, MagicMock
 from PySide6.QtWidgets import QComboBox  # Import necessary Qt widgets
