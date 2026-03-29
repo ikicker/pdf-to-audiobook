@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                                QAbstractItemView, QHeaderView, QMenuBar, QMenu)
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QAction
+from Queue import add_to_queue
 
 from PDF_to_Audiobook import AudiobookConverter
 import tomllib
@@ -17,6 +18,42 @@ from typing import Dict, Any
 # Mock list of voices and languages (replace with actual dynamic population later)
 # AVAILABLE_VOICES =["Default Voice", "am_adam", "am_echo", "am_onyx", "am_nova"]
 AVAILABLE_LANGUAGES =["en-US", "en-GB", "es-ES", "fr-FR", "de-DE"]
+
+def file_open(file, action, main_window):
+    try:
+        if sys.platform == "win32":
+            os.startfile(file)
+        elif sys.platform == "darwin":
+            subprocess.call(["open", file])
+        else:
+            subprocess.call(["xdg-open", file])
+    except Exception as e:
+        QMessageBox.critical(main_window, "Error", f"Couldn't {action}: {e}")
+
+def file_play(output_sound, action, main_window):
+    # we can't use ffplay to play a folder
+    if action == "open folder":
+        file_open(output_sound, action, main_window)
+        return
+    # Play the sound file using ffplay after conversion
+    cfg = load_config(config_path="pyproject.toml")
+    ffplay_path = cfg["ffplay"]
+    if os.path.isfile(ffplay_path):
+        try:
+            main_window.statusBar().showMessage(f"Playing audio with ffplay: {output_sound}")
+            subprocess.run([ffplay_path, "-i", output_sound], check=True) #Play the file and exit when done
+            main_window.statusBar().showMessage(f"Done playing audio with ffplay: {output_sound}")
+        except subprocess.CalledProcessError as e:
+            main_window.statusBar().showMessage(f"Error {action} with ffplay: {e}")
+    else:
+        main_window.statusBar().showMessage(f"Warning: ffplay path not found in config: {ffplay_path}")
+
+AVAILABLE_OPENERS = {
+        "OPEN": file_open,
+        "FFPLAY": file_play
+}
+
+OPENER = "FFPLAY"
 
 class ConversionWorker(QThread):
     """
@@ -33,7 +70,6 @@ class ConversionWorker(QThread):
         self.voice = voice
         self.language = language
         self.is_batch = is_batch
-        self.converter = AudiobookConverter()
         self.main_window = main_window
 
     def run(self):
@@ -60,7 +96,8 @@ class ConversionWorker(QThread):
                         base_name = os.path.splitext(filename)[0]  # Get filename without extension
                         output_file_path = os.path.join(output_path, base_name + ".mp3")
 
-                        self.converter.pdf_to_audio(pdf_path=input_file_path, output_path=output_file_path, voice=self.voice)
+                        AVAILABLE_BACKENDS[BACKEND](input_file_path, output_file_path, self.voice)
+
                         # Optionally update progress after each file conversion:
                         self.progress_update.emit(file_index/total_files)
                     self.progress_update.emit((file_index+1)/total_files)
@@ -76,7 +113,7 @@ class ConversionWorker(QThread):
                 self.finished_signal.emit() # Signal completion
 
             else:
-                self.converter.pdf_to_audio(pdf_path=self.input_path, output_path=self.output_path, voice=self.voice)
+                AVAILABLE_BACKENDS[BACKEND](self.input_path, self.output_path, self.voice)
 
                 self.finished_signal.emit() # Signal completion
         except Exception as e:
@@ -130,7 +167,6 @@ class BaseConversionTable(QWidget):
     """
     def __init__(self, main_window):
         super().__init__()
-        self.converter = AudiobookConverter()
         self.main_window = main_window
 
         self.tableWidget = QTableWidget()
@@ -173,7 +209,6 @@ class SingleFileConversionTable(BaseConversionTable):
         self.tableWidget.setColumnCount(6)
         self.tableWidget.setHorizontalHeaderLabels(["Input PDF", "Voice Choice", "Output Sound", "Launch Conversion", "Launch Sound", "Remove"]
         )
-        self.converter = AudiobookConverter()
 
     def add_row(self):
         row_count = self.tableWidget.rowCount()
@@ -271,28 +306,25 @@ class SingleFileConversionTable(BaseConversionTable):
             QMessageBox.warning(self.main_window, "Warning", "Invalid output file path or file does not exist.")
             return
 
-        #try:
-        #    if sys.platform == "win32":
-        #        os.startfile(output_sound)
-        #    elif sys.platform == "darwin":
-        #        subprocess.call(["open", output_sound])
-        #    else:
-        #        subprocess.call(["xdg-open", output_sound])
-        #except Exception as e:
-        #    QMessageBox.critical(self.main_window, "Error", f"Could not play sound file: {e}")
+        AVAILABLE_OPENERS[OPENER](output_sound, "play sound file", self.main_window)
 
-        # Play the sound file using ffplay after conversion
-        cfg = load_config(config_path="pyproject.toml")
-        ffplay_path = cfg["ffplay"]
-        if os.path.isfile(ffplay_path):
-            try:
-                self.main_window.statusBar().showMessage(f"Playing audio with ffplay: {output_sound}")
-                subprocess.run([ffplay_path, "-i", output_sound], check=True) #Play the file and exit when done
-                self.main_window.statusBar().showMessage(f"Done playing audio with ffplay: {output_sound}")
-            except subprocess.CalledProcessError as e:
-                self.main_window.statusBar().showMessage(f"Error playing audio with ffplay: {e}")
-        else:
-            self.main_window.statusBar().showMessage(f"Warning: ffplay path not found in config: {ffplay_path}")
+def process_backend(input_file_path, output_file_path, voice):
+    result = subprocess.run(['./audiobook_env/Scripts/python.exe', 'PDF_to_Audiobook.py', input_file_path, output_file_path, '--voice', voice], capture_output=False, text=True)
+
+def library_backend(input_file_path, output_file_path, voice):
+    converter = AudiobookConverter()
+    converter.pdf_to_audio(pdf_path=input_file_path, output_path=output_file_path, voice=voice)
+
+def queue_backend(input_file_path, output_file_path, voice):
+    add_to_queue(input_file_path, output_file_path, voice)
+
+AVAILABLE_BACKENDS = {
+    "PROCESS": process_backend,
+    "LIBRARY": library_backend,
+    "QUEUE": queue_backend
+}
+
+BACKEND = "PROCESS"
 
 def load_config(config_path: str = "pyproject.toml") -> Dict[str, Any]:
     """Load configuration from pyproject.toml under [tool.pdf-to-audiobook]"""
@@ -433,16 +465,7 @@ class BatchConversionTable(BaseConversionTable):
         if row == -1: return
 
         output_folder = self.tableWidget.cellWidget(row, 2).text()
-        try:
-            if sys.platform == "win32":
-                os.startfile(output_folder)
-            elif sys.platform == "darwin":
-                subprocess.call(["open", output_folder])
-            else:
-                subprocess.call(["xdg-open", output_folder])
-        except Exception as e:
-            QMessageBox.critical(self.main_window, "Error", f"Could not open folder: {e}")
-
+        AVAILABLE_OPENERS[OPENER](output_folder, "open folder", self.main_window);
 
 class MainWindow(QMainWindow):
     def __init__(self):
