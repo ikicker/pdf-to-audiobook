@@ -81,7 +81,7 @@ def test_batch_conversion_success(sample_pdf_file, tmpdir):
     converter.output_path = output_path
 
     # Mock the pdf_to_audio function to avoid actual conversion
-    with patch('your_module.AudiobookConverter.pdf_to_audio') as mock_pdf_to_audio:
+    with patch('PDF_to_Audiobook.AudiobookConverter.pdf_to_audio') as mock_pdf_to_audio:
         converter.run()
 
     assert mock_pdf_to_audio.call_count == 2  # Verify it was called for each PDF
@@ -94,7 +94,7 @@ def test_batch_conversion_input_folder_not_found(sample_pdf_file):
     converter.input_path = "nonexistent_folder"
 
     # Mock error signal emission
-    with patch('your_module.AudiobookConverter.error_signal') as mock_error_signal:
+    with patch('PDF_to_Audiobook.AudiobookConverter.error_signal') as mock_error_signal:
         converter.run()
     mock_error_signal.assert_called_once_with("Input folder not found: nonexistent_folder")
 
@@ -109,7 +109,7 @@ def test_single_file_conversion(sample_pdf_file, tmpdir):
     converter.voice = "en-us-amy" #Example voice
 
     # Mock the pdf_to_audio function
-    with patch('your_module.AudiobookConverter.pdf_to_audio') as mock_pdf_to_audio:
+    with patch('PDF_to_Audiobook.AudiobookConverter.pdf_to_audio') as mock_pdf_to_audio:
         converter.run()
 
     mock_pdf_to_audio.assert_called_once_with(pdf_path=sample_pdf_file, output_path=output_path, voice="en-us-amy")

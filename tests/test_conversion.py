@@ -45,7 +45,7 @@ class TestBatchConversionTable(unittest.TestCase):
         self.assertIsNotNone(voice_combo)
         self.assertEqual(voice_combo.count(), len(self.cfg["voices"])) # Check number of voices in combo box
 
-    @patch('your_module.load_config')  # Mock load_config function
+    @patch('frm_Main.load_config')  # Mock load_config function
     def test_add_row_loads_config(self, mock_load_config):
         """Test that add_row calls load_config and uses the returned config."""
         mock_load_config.return_value = self.cfg

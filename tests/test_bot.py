@@ -5,7 +5,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from frm_Main import MainWindow  # Replace 'your_module' with the actual module name
+from frm_Main import MainWindow
 from unittest.mock import Mock
 
 @pytest.fixture

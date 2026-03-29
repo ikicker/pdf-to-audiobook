@@ -21,7 +21,7 @@ class TestBatchConversionTable(unittest.TestCase):
         self.assertEqual(table.tableWidget.columnCount(), 5)
         self.assertEqual(table.tableWidget.horizontalHeaderLabels(), ["Input Folder", "Voice Chosen", "Launch Conversions", "Output Folder", "Launch Sounds"])
 
-    @patch('batch_conversion_table.load_config') # Mock the config loading function
+    @patch('frm_Main.load_config') # Mock the config loading function
     def test_add_row(self, mock_load_config):
         # Arrange
         main_window = MagicMock()
