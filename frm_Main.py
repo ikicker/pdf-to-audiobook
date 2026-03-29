@@ -43,18 +43,41 @@ class ConversionWorker(QThread):
             #for i in range(1, 101, 20):
             #    time.sleep(0.5) # Simulate work
             #    self.progress_update.emit(i)
-            
+
             if self.is_batch:
                 # Logic to iterate over folder and convert all pdfs
-                pass
+                input_folder = self.input_path  # Assuming input_path is the folder path
+                output_path = self.output_path #Assuming output_path is the base output directory
+
+                try:
+                    for filename in os.listdir(input_folder):
+                        if filename.endswith(".pdf"):
+                            input_file_path = os.path.join(input_folder, filename)
+                            # Construct the output file path (e.g., same name as input but with .mp3 extension)
+                            base_name = os.path.splitext(filename)[0]  # Get filename without extension
+                            output_file_path = os.path.join(output_path, base_name + ".mp3")
+
+                            self.converter.pdf_to_audio(pdf_path=input_file_path, output_path=output_file_path, voice=self.voice)
+                            # Optionally update progress after each file conversion:
+                            # self.progress_update.emit(...)  # Calculate percentage or increment
+
+                except FileNotFoundError:
+                    self.error_signal.emit(f"Input folder not found: {input_folder}")
+                    self.progress_update.emit(-1)
+                    return # Exit the function if the input folder is missing
+                except Exception as e:
+                    self.error_signal.emit(str(e))
+                    self.progress_update.emit(-1)  # Indicate error with -1
+
+                self.finished_signal.emit() # Signal completion
+
             else:
                 self.converter.pdf_to_audio(pdf_path=self.input_path, output_path=self.output_path, voice=self.voice)
-            
-            self.finished_signal.emit() # Signal completion
+
+                self.finished_signal.emit() # Signal completion
         except Exception as e:
             self.error_signal.emit(str(e))
             self.progress_update.emit(-1)  # Indicate error with -1
-
 
 class PathSelectionWidget(QWidget):
     """
