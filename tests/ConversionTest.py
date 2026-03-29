@@ -3,15 +3,15 @@ from unittest.mock import MagicMock, patch  # For mocking
 from pathlib import Path
 from typing import Dict, Any
 import tomllib # Import the toml library
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from frm_Main import BatchConversionTable # Assuming the class is in this module
-from frm_Main import PathSelectionWidget # Mock this as well
 from frm_Main import load_config
 from PDF_to_Audiobook import AudiobookConverter
+
 
 class TestBatchConversionTable(unittest.TestCase):
 
@@ -82,6 +82,31 @@ class TestAudiobookConverter(unittest.TestCase):
             self.assertEqual(mock_pdf_to_audio.call_count, 2)  # Called twice (file1 and file2)
 
     def test_run_batch_file_not_found(self):
-        """Test run method with batch conversion when the"""
-        pass
+        """Test run method with batch conversion when the input folder is missing."""
+        with patch('os.listdir') as mock_listdir:
+            mock_listdir.side_effect = FileNotFoundError("Input folder not found")
+
+            self.converter.input_path = "/nonexistent/folder"
+            self.converter.output_path = "/test/output"
+            self.converter.voice = "en"
+            self.converter.is_batch = True
+
+            self.converter.run()
+
+            # Assert that the error signal was emitted with the correct message
+            self.error_signal.assert_called_once_with("Input folder not found: /nonexistent/folder")
+            self.progress_update_signal.assert_called_once_with(-1)  # Check progress update
+
+    def test_run_batch_pdf_to_audio_exception(self):
+        """Test run method with batch conversion when pdf_to_audio raises an exception."""
+        with patch('os.listdir') as mock_listdir:
+            mock_listdir.return_value = ["file1.pdf"]
+
+            # Mock pdf_to_audio to raise an exception
+            self.converter.input_path = "/test/input"
+            self.converter.output_path = "/test/output"
+            self.converter.voice = "en"
+            self.converter.is_batch = True
+            mock_pdf_to_audio = MagicMock()
+            mock_pdf_to_audio.side_
 
