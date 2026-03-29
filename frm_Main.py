@@ -340,7 +340,7 @@ class BatchConversionTable(BaseConversionTable):
         super().__init__(main_window)
         
         self.tableWidget.setColumnCount(6)
-        self.tableWidget.setHorizontalHeaderLabels(["Input Folder", "Voice Chosen", "Launch Conversions", "Output Folder", "Launch Sounds", "Remove"]
+        self.tableWidget.setHorizontalHeaderLabels(["Input Folder", "Voice Chosen", "Output Folder", "Launch Conversions", "Launch Sounds", "Remove"]
         )
 
 
