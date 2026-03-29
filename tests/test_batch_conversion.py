@@ -12,7 +12,13 @@ from frm_Main import PathSelectionWidget # Mock this as well
 
 class TestBatchConversionTable(unittest.TestCase):
 
-    def test_init(self):
+    @pytest.fixture(scope="session")
+    def app(self):
+        app = QApplication(sys.argv)
+        yield app
+        app.quit()
+
+    def test_init(self, app):
         # Arrange
         main_window = MagicMock()  # Mock the main window object
         table = BatchConversionTable(main_window)
@@ -22,7 +28,7 @@ class TestBatchConversionTable(unittest.TestCase):
         self.assertEqual(table.tableWidget.horizontalHeaderLabels(), ["Input Folder", "Voice Chosen", "Launch Conversions", "Output Folder", "Launch Sounds"])
 
     @patch('frm_Main.load_config') # Mock the config loading function
-    def test_add_row(self, mock_load_config):
+    def test_add_row(self, mock_load_config, app):
         # Arrange
         main_window = MagicMock()
         table = BatchConversionTable(main_window)

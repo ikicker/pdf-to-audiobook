@@ -12,24 +12,31 @@ from PDF_to_Audiobook import AudiobookConverter # Import the class to mock
 
 class TestMainWindow(QTest):
 
-    def setUp(self):
+
+    @pytest.fixture(scope="session")
+    def app(self):
         """Setup method to create a QApplication and MainWindow instance before each test."""
-        self.app = QApplication.instance() or QApplication(sys.argv)  # Use existing app if running
-        self.window = MainWindow()
+        app = QApplication.instance() or QApplication(sys.argv)  # Use existing app if running
         self.converter_mock = Mock(spec=AudiobookConverter) # Create mock object
         self.worker = ConversionWorker("input.pdf", "output.mp3", "en-US", "en-GB")
         self.worker.converter = self.converter_mock
+        yield app
+        app.quit()
 
-    def tearDown(self):
+    @pytest.fixture
+    def main_window(app):
+        window = MainWindow()
+        return window
+
+    def tearDown(self, main_window):
         """Tear down method to clean up after each test."""
-        self.window.close()  # Close the window after each test
-        self.app = None # Clean up app instance
+        main_window.close()  # Close the window after each test
 
 
-    def test_add_row_creates_widgets(self):
-        initial_row_count = self.window.tableWidget.rowCount()
-        self.window.add_row()
-        new_row_count = self.window.tableWidget.rowCount()
+    def test_add_row_creates_widgets(self, main_window, app):
+        initial_row_count = main_window.tableWidget.rowCount()
+        main_window.add_row()
+        new_row_count = main_window.tableWidget.rowCount()
         self.assertEqual(new_row_count, initial_row_count + 1)
 
     def test_add_row_populates_voice_combo(self):
@@ -37,18 +44,18 @@ class TestMainWindow(QTest):
         config = {"voices": ["Voice1", "Voice2"]}
         self.converter_mock.load_config.return_value = config  # Configure mock
 
-        self.window.add_row()
-        voice_combo = self.window.tableWidget.cellWidget(0, 1) # Assuming row 0 is the newly added row
+        main_window.add_row()
+        voice_combo = main_window.tableWidget.cellWidget(0, 1) # Assuming row 0 is the newly added row
         self.assertIsInstance(voice_combo, QComboBox)
         self.assertEqual(voice_combo.count(), len(config["voices"]))
 
-    def test_launch_conversion_emits_progress_signal(self):
+    def test_launch_conversion_emits_progress_signal(self, app, main_window):
         # Mock converter to simulate a conversion process
         self.converter_mock.pdf_to_audio.return_value = None  # Simulate successful conversion
-        self.window.worker.converter = self.converter_mock
+        main_window.worker.converter = self.converter_mock
 
         # Find the launch button in the table (you might need to adjust this based on your layout)
-        launch_button = self.window.tableWidget.cellWidget(0, 3) # Assuming row 0 is the newly added row
+        launch_button = main_window.tableWidget.cellWidget(0, 3) # Assuming row 0 is the newly added row
         self.assertIsNotNone(launch_button)
 
         # Connect a slot to the progress_update signal and verify it's called
@@ -59,16 +66,16 @@ class TestMainWindow(QTest):
         launch_button.click()
 
         # Wait for the signal to be emitted (adjust timeout as needed)
-        self.app.processEvents() # Process events so signals are emitted
+        app.processEvents() # Process events so signals are emitted
         self.assertTrue(len(progress_values) > 0)  # Check that progress values were received
 
 
-    def test_launch_conversion_emits_error_signal(self):
+    def test_launch_conversion_emits_error_signal(self, app, main_window):
         # Mock converter to raise an exception during conversion
         self.converter_mock.pdf_to_audio.side_effect = Exception("Conversion failed")
 
         # Find the launch button in the table (you might need to adjust this based on your layout)
-        launch_button = self.window.tableWidget.cellWidget(0, 3) # Assuming row 0 is the newly added row
+        launch_button = main_window.tableWidget.cellWidget(0, 3) # Assuming row 0 is the newly added row
         self.assertIsNotNone(launch_button)
 
         # Connect a slot to the error_signal and verify it's called
@@ -79,5 +86,5 @@ class TestMainWindow(QTest):
         launch_button.click()
 
         # Wait for the signal to be emitted (adjust timeout as needed)
-        self.app.processEvents() # Process events so signals are emitted
+        app.processEvents() # Process events so signals are emitted
         self.assertIsNotNone(self.error_message)  # Check that an error message was received

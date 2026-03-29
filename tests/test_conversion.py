@@ -28,7 +28,7 @@ class TestBatchConversionTable(unittest.TestCase):
         expected_headers = ["Input Folder", "Voice Chosen", "Launch Conversions", "Output Folder", "Launch Sounds"]
         self.assertEqual(list(self.table.tableWidget.horizontalHeaderLabels()), expected_headers)
 
-    def test_add_row_creates_widgets(self):
+    def test_add_row_creates_widgets(self, app):
         """Test that add_row creates the correct widgets and sets them in the table."""
         row_count = self.table.rowCount()
         self.table.add_row()

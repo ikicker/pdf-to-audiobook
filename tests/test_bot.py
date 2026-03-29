@@ -8,12 +8,15 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from frm_Main import MainWindow
 from unittest.mock import Mock
 
-@pytest.fixture
-def app(qtbot): # qtbot is a fixture provided by pytest-qt
-    app = QApplication([])
-    return app
+@pytest.fixture(scope="session")
+def app(qtbot):
+    """Fixture to create a Qt application instance."""
+    app = QApplication(sys.argv)  # Pass sys.argv for proper command-line argument handling
+    yield app
+    app.quit() # Ensure the app is closed after tests
 
-def test_launch_conversion(app, qtbot):
+@pytest.fixture
+def main_window(app, qtbot):
     window = MainWindow()
     window.show()
 
@@ -33,4 +36,6 @@ def test_launch_conversion(app, qtbot):
 
     # Assert status bar message (example)
     # assert "Conversion started..." in window.statusBar().text()
+
+    return window
 

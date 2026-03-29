@@ -10,7 +10,6 @@ from PDF_to_Audiobook import AudiobookConverter
 
 class TestAudiobookConverter(unittest.TestCase):
 
-    @patch('converter_module.os') # Mock the os module
     def test_run_batch_success(self, mock_os):
         # Arrange
         mock_os.listdir.return_value = ["file1.pdf", "file2.txt", "file3.pdf"]  # Simulate files in a directory
@@ -27,7 +26,6 @@ class TestAudiobookConverter(unittest.TestCase):
         mock_converter.pdf_to_audio.assert_any_call(pdf_path="test_folder/file1.pdf", output_path="output_folder/file1.mp3", voice="en")
         mock_converter.pdf_to_audio.assert_any_call(pdf_path="test_folder/file3.pdf", output_path="output_folder/file3.mp3", voice="en")
 
-    @patch('converter_module.os') # Mock the os module
     def test_run_batch_no_pdfs(self, mock_os):
         # Arrange
         mock_os.listdir.return_value = ["file1.txt", "file2.jpg"]  # Simulate no PDFs in directory
@@ -42,7 +40,6 @@ class TestAudiobookConverter(unittest.TestCase):
         # Ensure pdf_to_audio isn't called if no PDFs are found
 
 
-    @patch('converter_module.os')  # Mock os module
     def test_run_batch_folder_not_found(self, mock_os):
         # Arrange
         mock_os.listdir.side_effect = FileNotFoundError("Folder not found") # Simulate folder missing
