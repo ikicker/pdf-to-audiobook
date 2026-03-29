@@ -240,15 +240,15 @@ class SingleFileConversionTable(BaseConversionTable):
             QMessageBox.warning(self.main_window, "Warning", "Invalid output file path or file does not exist.")
             return
 
-        try:
-            if sys.platform == "win32":
-                os.startfile(output_sound)
-            elif sys.platform == "darwin":
-                subprocess.call(["open", output_sound])
-            else:
-                subprocess.call(["xdg-open", output_sound])
-        except Exception as e:
-            QMessageBox.critical(self.main_window, "Error", f"Could not play sound file: {e}")
+        #try:
+        #    if sys.platform == "win32":
+        #        os.startfile(output_sound)
+        #    elif sys.platform == "darwin":
+        #        subprocess.call(["open", output_sound])
+        #    else:
+        #        subprocess.call(["xdg-open", output_sound])
+        #except Exception as e:
+        #    QMessageBox.critical(self.main_window, "Error", f"Could not play sound file: {e}")
 
         # Play the sound file using ffplay after conversion
         cfg = load_config(config_path="pyproject.toml")
