@@ -133,8 +133,11 @@ class BaseConversionTable(QWidget):
         self.tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-        add_row_button = QPushButton("Add Row")
-        remove_row_button = QPushButton("Remove Row")
+        add_row_button = QPushButton("+")  # Use "+" as text
+        add_row_button.setMaximumSize(30, 30) # Make smaller (adjust size as needed)
+
+        remove_row_button = QPushButton("-")
+        remove_row_button.setMaximumSize(30, 30)
 
         add_row_button.clicked.connect(self.add_row)
         remove_row_button.clicked.connect(self.remove_row)
@@ -149,10 +152,11 @@ class BaseConversionTable(QWidget):
 
         self.setLayout(self.layout)
 
-    def remove_row(self):
-        selected_rows = self.tableWidget.selectionModel().getSelectedRows()
-        for row in reversed(selected_rows):  # Remove from bottom to avoid index issues
-            self.tableWidget.removeRow(row.row())
+    def remove_row(self, row):
+        self.tableWidget.removeRow(row)
+        #selected_rows = self.tableWidget.selectionModel().getSelectedRows()
+        #for row in reversed(selected_rows):  # Remove from bottom to avoid index issues
+        #    self.tableWidget.removeRow(row.row())
 
     def get_widget_row(self, widget):
         """Helper to find which row a widget belongs to."""
@@ -167,8 +171,8 @@ class SingleFileConversionTable(BaseConversionTable):
     def __init__(self, main_window):
         super().__init__(main_window)
         
-        self.tableWidget.setColumnCount(5)
-        self.tableWidget.setHorizontalHeaderLabels(["Input PDF", "Voice Choice", "Output Sound", "Launch Conversion", "Launch Sound"]
+        self.tableWidget.setColumnCount(6)
+        self.tableWidget.setHorizontalHeaderLabels(["Input PDF", "Voice Choice", "Output Sound", "Launch Conversion", "Launch Sound", "Remove"]
         )
         self.converter = AudiobookConverter()
 
@@ -197,12 +201,16 @@ class SingleFileConversionTable(BaseConversionTable):
         launch_sound_btn = QPushButton("Play")
         launch_sound_btn.setEnabled(False) # Disabled initially
 
+        # 6. Remove Row
+        remove_button = QPushButton("X")
+
         # Insert widgets into table
         self.tableWidget.setCellWidget(row_count, 0, input_widget)
         self.tableWidget.setCellWidget(row_count, 1, voice_combo)
         self.tableWidget.setCellWidget(row_count, 2, output_widget)
         self.tableWidget.setCellWidget(row_count, 3, launch_conversion_btn)
         self.tableWidget.setCellWidget(row_count, 4, launch_sound_btn)
+        self.tableWidget.setCellWidget(row_count, 5, remove_button)
 
         # Connect Validation Signals
         input_widget.path_changed.connect(lambda: self.validate_row(input_widget))
@@ -212,6 +220,7 @@ class SingleFileConversionTable(BaseConversionTable):
         # Connect Action Signals
         launch_conversion_btn.clicked.connect(lambda: self.launch_conversion(launch_conversion_btn))
         launch_sound_btn.clicked.connect(lambda: self.launch_sound(launch_sound_btn))
+        remove_button.clicked.connect(lambda row=row_count: self.remove_row(row))
 
     def validate_row(self, sender_widget):
         row = self.get_widget_row(sender_widget)
@@ -332,7 +341,7 @@ class BatchConversionTable(BaseConversionTable):
     def __init__(self, main_window):
         super().__init__(main_window)
         
-        self.tableWidget.setColumnCount(5)
+        self.tableWidget.setColumnCount(6)
         self.tableWidget.setHorizontalHeaderLabels(["Input Folder", "Voice Chosen", "Launch Conversions", "Output Folder", "Launch Sounds"]
         )
 
@@ -363,12 +372,16 @@ class BatchConversionTable(BaseConversionTable):
         launch_sound_btn = QPushButton("Open Folder")
         launch_sound_btn.setEnabled(False) 
 
+        # 6. Remove Row
+        remove_button = QPushButton("X")
+
         # Insert widgets
         self.tableWidget.setCellWidget(row_count, 0, input_widget)
         self.tableWidget.setCellWidget(row_count, 1, voice_combo)
-        self.tableWidget.setCellWidget(row_count, 2, launch_conversion_btn)
-        self.tableWidget.setCellWidget(row_count, 3, output_widget)
+        self.tableWidget.setCellWidget(row_count, 2, output_widget)
+        self.tableWidget.setCellWidget(row_count, 3, launch_conversion_btn)
         self.tableWidget.setCellWidget(row_count, 4, launch_sound_btn)
+        self.tableWidget.setCellWidget(row_count, 5, remove_button)
 
         # Connections
         input_widget.path_changed.connect(lambda: self.validate_row(input_widget))
@@ -377,6 +390,7 @@ class BatchConversionTable(BaseConversionTable):
         
         launch_conversion_btn.clicked.connect(lambda: self.launch_batch_conversion(launch_conversion_btn))
         launch_sound_btn.clicked.connect(lambda: self.open_output_folder(launch_sound_btn))
+        remove_button.clicked.connect(lambda row=row_count: self.remove_row(row))
 
     def validate_row(self, sender_widget):
         row = self.get_widget_row(sender_widget)
