@@ -26,7 +26,7 @@ class ConversionWorker(QThread):
     finished_signal = Signal()     # Signal when finished
     error_signal = Signal(str)     # Signal for errors
 
-    def __init__(self, input_path, output_path, voice, language, is_batch=False):
+    def __init__(self, input_path, output_path, voice, language, main_window, is_batch=False):
         super().__init__()
         self.input_path = input_path
         self.output_path = output_path
@@ -34,6 +34,7 @@ class ConversionWorker(QThread):
         self.language = language
         self.is_batch = is_batch
         self.converter = AudiobookConverter()
+        self.main_window = main_window
 
     def run(self):
         try:
@@ -50,16 +51,19 @@ class ConversionWorker(QThread):
                 output_path = self.output_path #Assuming output_path is the base output directory
 
                 try:
-                    for filename in os.listdir(input_folder):
-                        if filename.endswith(".pdf"):
-                            input_file_path = os.path.join(input_folder, filename)
-                            # Construct the output file path (e.g., same name as input but with .mp3 extension)
-                            base_name = os.path.splitext(filename)[0]  # Get filename without extension
-                            output_file_path = os.path.join(output_path, base_name + ".mp3")
+                    filenames = [pdf for pdf in os.listdir(input_folder) if pdf.endswith(".pdf")]
+                    total_files = len(filenames)
+                    self.main_window.statusBar().showMessage(f"{total_files} {filenames}")
+                    for file_index, filename in enumerate(filenames):
+                        input_file_path = os.path.join(input_folder, filename)
+                        # Construct the output file path (e.g., same name as input but with .mp3 extension)
+                        base_name = os.path.splitext(filename)[0]  # Get filename without extension
+                        output_file_path = os.path.join(output_path, base_name + ".mp3")
 
-                            self.converter.pdf_to_audio(pdf_path=input_file_path, output_path=output_file_path, voice=self.voice)
-                            # Optionally update progress after each file conversion:
-                            # self.progress_update.emit(...)  # Calculate percentage or increment
+                        self.converter.pdf_to_audio(pdf_path=input_file_path, output_path=output_file_path, voice=self.voice)
+                        # Optionally update progress after each file conversion:
+                        self.progress_update.emit(file_index/total_files)
+                    self.progress_update.emit((file_index+1)/total_files)
 
                 except FileNotFoundError:
                     self.error_signal.emit(f"Input folder not found: {input_folder}")
@@ -181,7 +185,6 @@ class SingleFileConversionTable(BaseConversionTable):
         # 2. Voice Choice (QComboBox)
         self.cfg = load_config(config_path="pyproject.toml")
         voices = self.cfg["voices"]
-        print(voices)
 
         voice_combo = QComboBox()
         voice_combo.addItems(voices)
@@ -244,7 +247,7 @@ class SingleFileConversionTable(BaseConversionTable):
         self.tableWidget.cellWidget(row, 4).setEnabled(False) # Disable play during conversion (no file lock)
 
         # Start conversion thread
-        self.worker = ConversionWorker(input_pdf, output_sound, voice, self.main_window.get_selected_language())
+        self.worker = ConversionWorker(input_pdf, output_sound, voice, self.main_window.get_selected_language(), self.main_window)
         self.worker.progress_update.connect(self.main_window.update_progress)
         self.worker.error_signal.connect(self.main_window.show_error)
         self.worker.finished_signal.connect(lambda r=row: self.conversion_completed(r))
@@ -283,10 +286,9 @@ class SingleFileConversionTable(BaseConversionTable):
         ffplay_path = cfg["ffplay"]
         if os.path.isfile(ffplay_path):
             try:
-                print([ffplay_path, "-i", output_sound])
-                print(f"Playing audio with ffplay: {output_sound}")
+                self.main_window.statusBar().showMessage(f"Playing audio with ffplay: {output_sound}")
                 subprocess.run([ffplay_path, "-i", output_sound], check=True) #Play the file and exit when done
-                print(f"Done playing audio with ffplay: {output_sound}")
+                self.main_window.statusBar().showMessage(f"Done playing audio with ffplay: {output_sound}")
             except subprocess.CalledProcessError as e:
                 self.main_window.statusBar().showMessage(f"Error playing audio with ffplay: {e}")
         else:
@@ -352,7 +354,6 @@ class BatchConversionTable(BaseConversionTable):
         # 2. Voice Choice
         self.cfg = load_config(config_path="pyproject.toml")
         voices = self.cfg["voices"]
-        print(voices)
 
         voice_combo = QComboBox()
         voice_combo.addItems(voices)
@@ -413,7 +414,7 @@ class BatchConversionTable(BaseConversionTable):
         self.tableWidget.cellWidget(row, 3).setEnabled(False)
 
         # Start thread
-        self.worker = ConversionWorker(input_folder, output_folder, voice, self.main_window.get_selected_language(), is_batch=True)
+        self.worker = ConversionWorker(input_folder, output_folder, voice, self.main_window.get_selected_language(), self.main_window, is_batch=True)
         self.worker.progress_update.connect(self.main_window.update_progress)
         self.worker.error_signal.connect(self.main_window.show_error)
         self.worker.finished_signal.connect(lambda r=row: self.conversion_completed(r))
