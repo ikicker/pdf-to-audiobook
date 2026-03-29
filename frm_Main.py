@@ -291,7 +291,7 @@ class SingleFileConversionTable(BaseConversionTable):
     def conversion_completed(self, row):
         self.main_window.statusBar().showMessage("Conversion completed successfully!")
         self.main_window.progress_bar.setValue(100)
-        QMessageBox.information(self.main_window, "Success", "Single file conversion completed successfully!")
+        QMessageBox.information(self.main_window, "Success", "Single file conversion or queue submission completed successfully!")
         
         # Re-enable Launch button, enable Play button
         self.tableWidget.cellWidget(row, 3).setEnabled(True)
@@ -324,7 +324,7 @@ AVAILABLE_BACKENDS = {
     "QUEUE": queue_backend
 }
 
-BACKEND = "PROCESS"
+BACKEND = "QUEUE"
 
 def load_config(config_path: str = "pyproject.toml") -> Dict[str, Any]:
     """Load configuration from pyproject.toml under [tool.pdf-to-audiobook]"""
@@ -453,9 +453,9 @@ class BatchConversionTable(BaseConversionTable):
         self.worker.start()
 
     def conversion_completed(self, row):
-        self.main_window.statusBar().showMessage("Batch conversion completed!")
+        self.main_window.statusBar().showMessage("Batch conversion or queue submission completed!")
         self.main_window.progress_bar.setValue(100)
-        QMessageBox.information(self.main_window, "Success", "Folder batch conversion completed successfully!")
+        QMessageBox.information(self.main_window, "Success", "Folder batch conversion or queue submission completed successfully!")
         
         self.tableWidget.cellWidget(row, 3).setEnabled(True)
         self.tableWidget.cellWidget(row, 4).setEnabled(True)
