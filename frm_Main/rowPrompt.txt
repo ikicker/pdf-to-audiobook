@@ -1,0 +1,12 @@
+You are assisting a developer building a PDF to audio conversion application using PyQt5. The application allows for both single file and batch conversions. The developer is encountering an issue where deleting rows in the QTableWidget used for managing batch conversion files only reliably deletes the first row, due to incorrect index handling after deletion.
+
+Task:
+
+Based on the provided code snippets (which include methods for adding rows with widgets like path selection and buttons, a helper function to get the current row of a widget, and the remove_row method), provide a corrected implementation of the add_row method that ensures the correct row index is passed to the remove_row method when the "X" button (used for deleting rows) is clicked.  The solution should dynamically determine the row number associated with the clicked button at the time of the click, and use a helper function (get_widget_row) to achieve this.
+
+Specifically:
+
+Modify the add_row method to connect the "X" button's clicked signal to the remove_row method, passing the correct row index obtained using the get_widget_row helper function.
+Ensure that the remove_row method receives and uses this dynamically determined row index for deletion.
+Include a check in remove_row to ensure a valid row was found before attempting deletion.
+The goal is to enable reliable deletion of any row within the table, regardless of previous deletions, and maintain correct indexing for subsequent operations.  Assume the necessary classes (BaseConversionTable, SingleFileConversionTable, AudiobookConverter, PathSelectionWidget, QTableWidget, etc.) are already defined as per the provided code snippets.

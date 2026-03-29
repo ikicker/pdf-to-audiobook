@@ -241,6 +241,7 @@ class SingleFileConversionTable(BaseConversionTable):
 
         self.main_window.statusBar().showMessage(f"Conversion started for {os.path.basename(input_pdf)}...")
         self.tableWidget.cellWidget(row, 3).setEnabled(False) # Disable launch button during conversion
+        self.tableWidget.cellWidget(row, 4).setEnabled(False) # Disable play during conversion (no file lock)
 
         # Start conversion thread
         self.worker = ConversionWorker(input_pdf, output_sound, voice, self.main_window.get_selected_language())
@@ -356,12 +357,12 @@ class BatchConversionTable(BaseConversionTable):
         voice_combo = QComboBox()
         voice_combo.addItems(voices)
         
-        # 3. Launch Conversions Button
+        # 3. Output Folder
+        output_widget = PathSelectionWidget("directory")
+        
+        # 4. Launch Conversions Button
         launch_conversion_btn = QPushButton("Launch All")
         launch_conversion_btn.setEnabled(False) 
-        
-        # 4. Output Folder
-        output_widget = PathSelectionWidget("directory")
         
         # 5. Launch Sounds Button (Play folder contents)
         launch_sound_btn = QPushButton("Open Folder")
@@ -393,9 +394,9 @@ class BatchConversionTable(BaseConversionTable):
 
         input_path = self.tableWidget.cellWidget(row, 0).text()
         voice = self.tableWidget.cellWidget(row, 1).currentText()
-        output_path = self.tableWidget.cellWidget(row, 3).text()
+        output_path = self.tableWidget.cellWidget(row, 2).text()
         
-        launch_btn = self.tableWidget.cellWidget(row, 2)
+        launch_btn = self.tableWidget.cellWidget(row, 3)
         
         is_ready = bool(input_path) and bool(voice) and bool(output_path)
         launch_btn.setEnabled(is_ready)
@@ -406,10 +407,10 @@ class BatchConversionTable(BaseConversionTable):
 
         input_folder = self.tableWidget.cellWidget(row, 0).text()
         voice = self.tableWidget.cellWidget(row, 1).currentText()
-        output_folder = self.tableWidget.cellWidget(row, 3).text()
+        output_folder = self.tableWidget.cellWidget(row, 2).text()
 
         self.main_window.statusBar().showMessage(f"Batch conversion started for folder...")
-        self.tableWidget.cellWidget(row, 2).setEnabled(False)
+        self.tableWidget.cellWidget(row, 3).setEnabled(False)
 
         # Start thread
         self.worker = ConversionWorker(input_folder, output_folder, voice, self.main_window.get_selected_language(), is_batch=True)
@@ -423,14 +424,14 @@ class BatchConversionTable(BaseConversionTable):
         self.main_window.progress_bar.setValue(100)
         QMessageBox.information(self.main_window, "Success", "Folder batch conversion completed successfully!")
         
-        self.tableWidget.cellWidget(row, 2).setEnabled(True)
+        self.tableWidget.cellWidget(row, 3).setEnabled(True)
         self.tableWidget.cellWidget(row, 4).setEnabled(True)
 
     def open_output_folder(self, button):
         row = self.get_widget_row(button)
         if row == -1: return
 
-        output_folder = self.tableWidget.cellWidget(row, 3).text()
+        output_folder = self.tableWidget.cellWidget(row, 2).text()
         try:
             if sys.platform == "win32":
                 os.startfile(output_folder)
