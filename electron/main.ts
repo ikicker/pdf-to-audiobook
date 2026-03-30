@@ -81,6 +81,35 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 
+  // ─── Background Queue Worker ────────────────────────────────────────────────
+  let isProcessingQueue = false
+
+  async function processQueue() {
+    if (isProcessingQueue) return
+    isProcessingQueue = true
+
+    try {
+      while (true) {
+        const job = nextPendingJob()
+        if (!job) break // No more pending jobs, sleep worker
+
+        await new Promise<void>((resolve) => {
+          spawnConversion(
+            job.id,
+            job.inputFile,
+            job.outputFile,
+            job.voice,
+            mainWin,
+            () => resolve(), // On success, resolve to move to next job
+            () => resolve()  // On error, resolve anyway so the queue doesn't stall completely
+          )
+        })
+      }
+    } finally {
+      isProcessingQueue = false
+    }
+  }
+
   // ── Config ─────────────────────────────────────────────────────────────────
   ipcMain.handle('config:load', () => loadConfig())
 
@@ -88,9 +117,9 @@ app.whenReady().then(() => {
   ipcMain.handle('dialog:openFile', async (_e: IpcMainInvokeEvent, filter?: string) => {
     const filters =
       filter === 'pdf'
-        ? [{ name: 'PDF Files', extensions: ['pdf'] }]
+        ?[{ name: 'PDF Files', extensions: ['pdf'] }]
         : [
-            { name: 'Audio Files', extensions: ['mp3', 'wav'] },
+            { name: 'Audio Files', extensions:['mp3', 'wav'] },
             { name: 'All Files',   extensions: ['*'] },
           ]
     return dialog.showOpenDialog(mainWin, { properties: ['openFile'], filters })
@@ -99,8 +128,8 @@ app.whenReady().then(() => {
   ipcMain.handle('dialog:saveFile', async (_e: IpcMainInvokeEvent, filter?: string) => {
     const filters =
       filter === 'audio'
-        ? [{ name: 'Audio Files', extensions: ['mp3', 'wav'] }]
-        : [{ name: 'All Files', extensions: ['*'] }]
+        ?[{ name: 'Audio Files', extensions: ['mp3', 'wav'] }]
+        : [{ name: 'All Files', extensions:['*'] }]
     return dialog.showSaveDialog(mainWin, { filters })
   })
 
@@ -108,11 +137,11 @@ app.whenReady().then(() => {
     return dialog.showOpenDialog(mainWin, { properties: ['openDirectory'] })
   })
 
-// ── Queue ──────────────────────────────────────────────────────────────────
+  // ── Queue ──────────────────────────────────────────────────────────────────
   ipcMain.handle('queue:add', (_e, inputFile: string, outputFile: string, voice: string) => {
     const job = addJob(inputFile, outputFile, voice)
     mainWin.webContents.send('queue:changed', getAllJobs())
-    processQueue(mainWin) // Wake up worker
+    processQueue() // Wake up worker
     return job
   })
 
@@ -125,21 +154,20 @@ app.whenReady().then(() => {
 
   ipcMain.handle('queue:clear', () => {
     clearQueue()
-    mainWin.webContents.send('queue:changed', [])
+    mainWin.webContents.send('queue:changed',[])
   })
 
   // ── Conversion (single file) ───────────────────────────────────────────────
   ipcMain.handle('conversion:start', async (_e, payload: ConversionStartPayload) => {
     const { jobId, inputFile, outputFile, voice } = payload
-    
+
     // Add to queue using the React UI's specific jobId so the table row updates
     addJob(inputFile, outputFile, voice, jobId)
     mainWin.webContents.send('queue:changed', getAllJobs())
-    
-    // Wake up worker
-    processQueue(mainWin)
-  })
 
+    // Wake up worker
+    processQueue()
+  })
 
   // ── Conversion (batch — folder of PDFs) ───────────────────────────────────
   ipcMain.handle('conversion:startBatch', async (_e, payload: BatchConversionStartPayload) => {
@@ -164,42 +192,25 @@ app.whenReady().then(() => {
       return
     }
 
-    // Run each file sequentially, re-using the same jobId for overall progress
-    ;(async () => {
-      for (let i = 0; i < pdfFiles.length; i++) {
-        const pdfName = pdfFiles[i]
-        const inputFile  = join(inputFolder, pdfName)
-        const baseName   = basename(pdfName, extname(pdfName))
-        const outputFile = join(outputFolder, `${baseName}.mp3`)
+    // Add each file to the queue
+    for (let i = 0; i < pdfFiles.length; i++) {
+      const pdfName = pdfFiles[i]
+      const inputFile  = join(inputFolder, pdfName)
+      const baseName   = basename(pdfName, extname(pdfName))
+      const outputFile = join(outputFolder, `${baseName}.mp3`)
 
-        const progress = Math.round((i / pdfFiles.length) * 100)
-        mainWin.webContents.send('conversion:progress', {
-          jobId,
-          progress,
-          message: `[${i + 1}/${pdfFiles.length}] ${pdfName}`,
-        })
+      // Append _i to the batch job ID so each file in the batch has a unique ID in the queue
+      addJob(inputFile, outputFile, voice, `${jobId}_${i}`)
+    }
 
-        await new Promise<void>((resolve, reject) => {
-    	  addJob(inputFile, outputFile, voice)
-	  /*
-          spawnConversion(
-            `${jobId}_${i}`,
-            inputFile,
-            outputFile,
-            voice,
-            mainWin,
-            resolve,
-            reject,
-          )
-	  */
-        })
-      }
+    mainWin.webContents.send('queue:changed', getAllJobs())
 
-      mainWin.webContents.send('conversion:progress', { jobId, progress: 100 })
-      mainWin.webContents.send('conversion:complete', { jobId })
-    })().catch(err => {
-      mainWin.webContents.send('conversion:error', { jobId, message: String(err) })
-    })
+    // Kick off the queue
+    processQueue()
+
+    // Fake the batch task progress for the UI (so the main UI row says complete)
+    mainWin.webContents.send('conversion:progress', { jobId, progress: 100, message: `Queued ${pdfFiles.length} files.` })
+    mainWin.webContents.send('conversion:complete', { jobId })
   })
 
   // ── Audio playback ─────────────────────────────────────────────────────────
@@ -215,35 +226,6 @@ app.whenReady().then(() => {
   ipcMain.handle('file:open', async (_e, filePath: string) => {
     await shell.openPath(filePath)
   })
-
-  // ─── Background Queue Worker ─────────────────────────────────────────────────
-  let isProcessingQueue = false
-
-  async function processQueue(win: BrowserWindow) {
-    if (isProcessingQueue) return
-    isProcessingQueue = true
-
-    try {
-      while (true) {
-	const job = nextPendingJob()
-	if (!job) break // No more pending jobs, sleep worker
-
-	await new Promise<void>((resolve) => {
-	  spawnConversion(
-	    job.id,
-	    job.inputFile,
-	    job.outputFile,
-	    job.voice,
-	    win,
-	    () => resolve(), // On success, resolve to move to next job
-	    () => resolve()  // On error, resolve anyway so the queue doesn't stall completely
-	  )
-	})
-      }
-    } finally {
-      isProcessingQueue = false
-    }
-  }
 
 })
 
@@ -269,16 +251,21 @@ function spawnConversion(
 
   const scriptPath = join(process.cwd(), 'PDF_to_Audiobook.py')
 
-  const args = [scriptPath, inputFile, outputFile, '--voice', voice]
+  const args =[scriptPath, inputFile, outputFile, '--voice', voice]
 
   markRunning(jobId)
   win.webContents.send('conversion:progress', { jobId, progress: 0, message: 'Starting…' })
+  win.webContents.send('queue:changed', getAllJobs())
 
   let stderrBuf = ''
 
   const child = spawn(pythonExe, args, {
     cwd: process.cwd(),
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio:['ignore', 'pipe', 'pipe'],
+    env: {
+      ...process.env,               // Keep all existing environment variables
+      PYTHONIOENCODING: 'utf-8',    // Force Python to output in UTF-8 so emojis don't crash it!
+    }
   })
 
   activeProcesses.set(jobId, child)
@@ -319,6 +306,9 @@ function spawnConversion(
       onSuccess?.()
     } else {
       const errMsg = stderrBuf.trim() || `Process exited with code ${code}`
+
+      console.error('\n=== PYTHON CRASHED ===\n', errMsg, '\n======================\n')
+
       markError(jobId, errMsg)
       win.webContents.send('conversion:error', { jobId, message: errMsg })
       win.webContents.send('queue:changed', getAllJobs())
