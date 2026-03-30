@@ -17,3 +17,8 @@ __pycache__/
 venv/
 env/
 fresh_audiobook_env/
+
+# TypeScript
+node_modules
+release
+out
