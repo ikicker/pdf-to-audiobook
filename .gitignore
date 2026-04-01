@@ -20,5 +20,7 @@ fresh_audiobook_env/
 
 # TypeScript
 node_modules
+package.json
+package-lock.json
 release
 out
