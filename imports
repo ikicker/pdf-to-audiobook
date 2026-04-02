@@ -3,6 +3,13 @@ C:/Python312/python -m venv audiobook_env
 source audiobook_env/Scripts/activate
 audiobook_env/Scripts/python -m pip install --upgrade pip setuptools wheel
 audiobook_env/Scripts/pip install .
-# audiobook_env/Scripts/pip install torch torchaudio
-audiobook_env/Scripts/pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
+audiobook_env/Scripts/pip install torch torchaudio
+# audiobook_env/Scripts/pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
 audiobook_env/Scripts/python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
+pip install pip-audit
+pip-audit
+npm install --package-lock-only
+npm audit
+npm audit fix
+npm install
+npm run dev
