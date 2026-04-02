@@ -1,14 +1,14 @@
 # Python setup
 rm -r audiobook_env
-C:/Python312/python -m venv audiobook_env
+C:/Python312/python -3.12 -m venv audiobook_env
 source audiobook_env/Scripts/activate
 audiobook_env/Scripts/python -m pip install --upgrade pip setuptools wheel
 audiobook_env/Scripts/pip install .
-# audiobook_env/Scripts/pip install torch torchaudio
-audiobook_env/Scripts/pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
+audiobook_env/Scripts/pip install torch torchaudio
 audiobook_env/Scripts/python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
+# audiobook_env/Scripts/pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
 pip install pip-audit
-pip-audit --extra-index-url https://pytorch.org
+pip-audit
 
 # Node.js setup
 rm -r node_modules
