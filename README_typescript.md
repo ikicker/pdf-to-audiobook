@@ -74,6 +74,23 @@ Download a static build and extract to `./ffmpeg/bin/` (matching `pyproject.toml
 
 ---
 
+## before anything:
+
+Run:
+
+```
+npm install --package-lock-only
+``
+Which installs package-lock.json without any node modules.
+
+Thsn run:
+```
+npm audit
+```
+
+Consider output carefully.
+
+
 ## Development
 
 ```bash
