@@ -307,7 +307,7 @@ function spawnConversion(
     } else {
       const errMsg = stderrBuf.trim() || `Process exited with code ${code}`
 
-      console.error('\n=== PYTHON CRASHED ===\n', errMsg, '\n======================\n')
+      console.error(pythonExe, args, stderrBuf.trim(), '\n=== PYTHON CRASHED ===\n', errMsg, '\n======================\n')
 
       markError(jobId, errMsg)
       win.webContents.send('conversion:error', { jobId, message: errMsg })
