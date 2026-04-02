@@ -324,7 +324,7 @@ AVAILABLE_BACKENDS = {
     "QUEUE": queue_backend
 }
 
-BACKEND = "QUEUE"
+BACKEND = "PROCESS"
 
 def load_config(config_path: str = "pyproject.toml") -> Dict[str, Any]:
     """Load configuration from pyproject.toml under [tool.pdf-to-audiobook]"""
