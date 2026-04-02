@@ -13,3 +13,9 @@ npm audit
 npm audit fix
 npm install
 npm run dev
+
+npm run build       # compile TypeScript + bundle Vite
+npm run package     # wrap with electron-builder (auto-detects platform)
+#npm run package:win
+#npm run package:mac
+#npm run package:linux
