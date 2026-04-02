@@ -1,8 +1,8 @@
-rm -r venv
-C:/Python312/python -m venv venv
-source venv/Scripts/activate
-python -m pip install --upgrade pip setuptools wheel
-pip install .
-# pip install torch torchaudio
-pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
-python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
+rm -r audiobook_venv
+C:/Python312/python -m venv audiobook_venv
+source audiobook_venv/Scripts/activate
+audiobook_venv/Scripts/python -m pip install --upgrade pip setuptools wheel
+audiobook_venv/Scripts/pip install .
+# audiobook_venv/Scripts/pip install torch torchaudio
+audiobook_venv/Scripts/pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
+audiobook_venv/Scripts/python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
