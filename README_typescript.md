@@ -95,6 +95,7 @@ Consider output carefully.
 
 ```bash
 npm install
+source audiobook_env/Scripts/activate
 npm run dev
 ```
 
@@ -105,6 +106,7 @@ This starts Vite dev server + Electron with hot-reload.
 ## Production build
 
 ```bash
+source audiobook_env/Scripts/activate
 npm run build       # compile TypeScript + bundle Vite
 npm run package     # wrap with electron-builder (auto-detects platform)
 
