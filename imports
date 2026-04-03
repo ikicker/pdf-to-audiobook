@@ -35,7 +35,7 @@ echo Auditing Node.js modules...
 npm audit
 npm audit fix
 echo Installing Node.js modules --ignore scripts...
-npm install --ignore-scripts
+npm ci --ignore-scripts
 echo Running graphical user interface
 npm run dev
 
