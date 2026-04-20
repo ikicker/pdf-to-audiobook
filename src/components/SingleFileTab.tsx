@@ -53,7 +53,7 @@ export default function SingleFileTab({ config, jobRuntime, onStatus, onJobsChan
     setRows(prev => [...prev, makeRow(config.defaultVoice)])
 
   const canLaunch = (r: RowState) =>
-    !!r.inputFile && !!r.outputFile && !!r.voice && !r.isRunning
+    !!r.inputFile && !!r.outputFile && !!r.voice // && !r.isRunning
 
   const launch = async (row: RowState) => {
     const jobId = crypto.randomUUID()
