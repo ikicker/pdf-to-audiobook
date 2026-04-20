@@ -1,3 +1,4 @@
 1.  If you create a single file job, you can't start another one until the first one is finished.
 2.  The installer Setup in release doesn't work (probably something to do with path to .exe???)
 	* Running "release/PDF to Audiobook Setup 1.0.0.exe" doesn't work
+3.  Add a way to restart the translation if running a lot of batch jobs and you delete individual conversions
