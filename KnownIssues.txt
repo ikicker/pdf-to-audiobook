@@ -1,4 +1,24 @@
 FIXED 1.  If you create a single file job, you can't start another one until the first one is finished.
-2.  The installer Setup in release doesn't work (probably something to do with path to .exe???)
-	* Running "release/PDF to Audiobook Setup 1.0.0.exe" doesn't work
-3.  Add a way to restart the translation if running a lot of batch jobs and you delete individual conversions
+FIXED 2.  The installer Setup in release doesn't work (probably something to do with path to .exe???)
+	I added this to package.json build:
+	    "nsis": {
+	      "oneClick": false,
+	      "allowToChangeInstallationDirectory": true
+	    }
+	I added this to package.json files:
+      	    "audiobook_env/**/*"
+3.  Add a way to restart the translation if running a lot of batch jobs and you delete individual running conversions
+	* Also restart queue if program is killed, then restart it on launch, or provide option
+	* Add a retry button for individual jobs
+	* If you delete a running job, it doesn't go to the next job.  Restarting may help, but not really.
+4. In Windows 11, queue is trying to be created under a protected folder.
+	We may need the install script to create %HOMEDIR%/AppData/Local/Temp/PDFToAudioQueue/
+
+	import { join } from 'path'
+	import { app } from 'electron'
+
+	const tempDir = app.getPath('temp');
+	const QUEUE_DIR = join(tempDir, 'queue')
+
+	If running in the development environment, this works, not production
+5. Electron install doesn't work with Python .exe yet.
