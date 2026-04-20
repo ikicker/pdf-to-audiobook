@@ -83,7 +83,7 @@ npm install --package-lock-only
 ``
 Which installs package-lock.json without any node modules.
 
-Thsn run:
+Then run:
 ```
 npm audit
 ```
