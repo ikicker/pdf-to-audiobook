@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
+    "build:python1": "pyinstaller --onedir PDF_to_Audiobook.py && electron-builder",
     "preview": "electron-vite preview",
     "package": "electron-vite build && electron-builder",
     "package:win": "electron-vite build && electron-builder --win",
@@ -39,8 +40,6 @@
     "files": [
       "out/**/*",
       "PDF_to_Audiobook.py",
-      "Queue.py",
-      "QueueService.py",
       "pyproject.toml",
       "ffmpeg/**/*",
       "audiobook_env/**/*"
@@ -55,7 +54,7 @@
     },
     "linux": {
       "target": "AppImage",
-      "icon": "resources/icon.png"
+      "icon": "frm_Main/icon.png"
     },
     "nsis": {
       "oneClick": false,
@@ -63,6 +62,31 @@
       "include": "frm_Main/installer.nsh",
       "allowToChangeInstallationDirectory": true,
       "shortcutName": "PDF to AudioBook"
+    },
+    "extraResources": [
+    {
+      "from": "audiobook_env",
+      "to": "audiobook_env",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "PDF_to_Audiobook.py",
+      "to": "PDF_to_Audiobook.py"
+    },
+    {
+      "from": "pyproject.toml",
+      "to": "pyproject.toml"
+    },
+    {
+      "from": "ffmpeg",
+      "to": "ffmpeg",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "out",
+      "to": "out",
+      "filter": ["**/*"]
     }
+    ]
   }
 }

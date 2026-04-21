@@ -9,10 +9,11 @@
 
 import { mkdirSync, readdirSync, readFileSync, writeFileSync, unlinkSync, existsSync } from 'fs'
 import { join } from 'path'
+import { app } from 'electron'
 import { randomUUID } from 'crypto'
 import type { QueueJob, JobStatus } from '../src/types'
 
-const QUEUE_DIR = join(process.cwd(), 'queue')
+const QUEUE_DIR = join(app.getPath('userData'), 'queue')
 
 function ensureQueueDir(): void {
   if (!existsSync(QUEUE_DIR)) mkdirSync(QUEUE_DIR, { recursive: true })
