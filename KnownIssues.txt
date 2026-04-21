@@ -11,8 +11,8 @@ FIXED 2.  The installer Setup in release doesn't work (probably something to do 
 	* Also restart queue if program is killed, then restart it on launch, or provide option
 	* Add a retry button for individual jobs
 	* If you delete a running job, it doesn't go to the next job.  Restarting may help, but not really.
-4. In Windows 11, queue is trying to be created under a protected folder.
-	We may need the install script to create %HOMEDIR%/AppData/Local/Temp/PDFToAudioQueue/
+Perhaps fixed 4. In Windows 11, queue is trying to be created under a protected folder.
+	We may need the install script to create see frm_Main/installer.nsh
 
 	import { join } from 'path'
 	import { app } from 'electron'
