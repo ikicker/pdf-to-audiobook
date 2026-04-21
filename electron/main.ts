@@ -217,7 +217,11 @@ app.whenReady().then(() => {
   ipcMain.handle('file:play', async (_e, filePath: string) => {
     const cfg = loadConfig()
     if (cfg.ffplay) {
-      spawn(cfg.ffplay, ['-autoexit', '-i', filePath], { detached: true })
+      try {
+        spawn(cfg.ffplay, ['-autoexit', '-i', filePath], { detached: true })
+      } catch {
+        await shell.openPath(filePath)
+      }
     } else {
       await shell.openPath(filePath)
     }
@@ -244,12 +248,22 @@ function spawnConversion(
   onError?: (err: string) => void,
 ): void {
   // Determine Python executable — support venv or system Python
-  const pythonExe =
-    process.platform === 'win32'
-      ? join(process.cwd(), 'audiobook_env', 'Scripts', 'python.exe')
-      : join(process.cwd(), 'audiobook_env', 'bin', 'python')
+  let pythonExe = null;
+  let scriptPath = null;
+  if (app.isPackaged) {
+    // Production logic
+      pythonExe = process.platform === 'win32'
+        ? join(process.cwd(), 'resources', 'audiobook_env', 'Scripts', 'python.exe')
+        : join(process.cwd(), 'resources', 'audiobook_env', 'bin', 'python')
+      scriptPath = join(process.cwd(), 'resources', 'PDF_to_Audiobook.py')
+  } else {
+    // Development logic
+      pythonExe = process.platform === 'win32'
+        ? join(process.cwd(), 'audiobook_env', 'Scripts', 'python.exe')
+        : join(process.cwd(), 'audiobook_env', 'bin', 'python')
+      scriptPath = join(process.cwd(), 'PDF_to_Audiobook.py')
+  }
 
-  const scriptPath = join(process.cwd(), 'PDF_to_Audiobook.py')
 
   const args =[scriptPath, inputFile, outputFile, '--voice', voice]
 
@@ -308,6 +322,14 @@ function spawnConversion(
       const errMsg = stderrBuf.trim() || `Process exited with code ${code}`
 
       console.error(pythonExe, args, stderrBuf.trim(), '\n=== PYTHON CRASHED ===\n', errMsg, '\n======================\n')
+
+      /*
+      win.webContents.executeJavaScript('document.getElementById("root").innerHTML = "<div>'+
+                                       (errMsg.replaceAll('\\', '/'))+'<br>'+
+                                       (pythonExe.replaceAll('\\', '/'))+' '
+                                       (args.toString().replaceAll('\\', '/').replaceAll(',', ' '))+
+                                       '</div>";');
+				       */
 
       markError(jobId, errMsg)
       win.webContents.send('conversion:error', { jobId, message: errMsg })

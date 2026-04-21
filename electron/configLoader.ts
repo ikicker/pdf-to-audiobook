@@ -22,9 +22,9 @@ export function loadConfig(configPath?: string): AppConfig {
     outputPath: 'audiobook.mp3',
     maxWordsPerChunk: 350,
     pauseBetweenChunksSec: 0.6,
-    ffmpeg: './ffmpeg/bin/ffmpeg.exe',
-    ffprobe: './ffmpeg/bin/ffprobe.exe',
-    ffplay: './ffmpeg/bin/ffplay.exe',
+    ffmpeg: 'ffmpeg.exe',
+    ffprobe: 'ffprobe.exe',
+    ffplay: 'ffplay.exe',
   }
 
   if (!existsSync(tomlPath)) {
