@@ -29,7 +29,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "typescript": "6.0.2",
-    "vite": "7.3.2"
+    "vite": "7.3.5"
   },
   "build": {
     "appId": "com.innerninja.pdf-to-audiobook",
