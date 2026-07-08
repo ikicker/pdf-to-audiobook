@@ -1,0 +1,9 @@
+argparse
+pathlib
+numpy
+tqdm
+pydub
+nltk
+pypdf
+torch
+kokoro

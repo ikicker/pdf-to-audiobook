@@ -20,16 +20,16 @@
   },
   "devDependencies": {
     "@types/node": "25.5.0",
-    "@types/react": "19.2.14",
+    "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.2.0",
     "electron": "41.2.1",
     "electron-builder": "26.8.1",
     "electron-vite": "5.0.0",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
     "typescript": "6.0.2",
-    "vite": "7.3.2"
+    "vite": "7.3.6"
   },
   "build": {
     "appId": "com.innerninja.pdf-to-audiobook",
@@ -64,29 +64,40 @@
       "shortcutName": "PDF to AudioBook"
     },
     "extraResources": [
-    {
-      "from": "audiobook_env",
-      "to": "audiobook_env",
-      "filter": ["**/*"]
-    },
-    {
-      "from": "PDF_to_Audiobook.py",
-      "to": "PDF_to_Audiobook.py"
-    },
-    {
-      "from": "pyproject.toml",
-      "to": "pyproject.toml"
-    },
-    {
-      "from": "ffmpeg",
-      "to": "ffmpeg",
-      "filter": ["**/*"]
-    },
-    {
-      "from": "out",
-      "to": "out",
-      "filter": ["**/*"]
-    }
+      {
+        "from": "audiobook_env",
+        "to": "audiobook_env",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "PDF_to_Audiobook.py",
+        "to": "PDF_to_Audiobook.py"
+      },
+      {
+        "from": "pyproject.toml",
+        "to": "pyproject.toml"
+      },
+      {
+        "from": "ffmpeg",
+        "to": "ffmpeg",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "out",
+        "to": "out",
+        "filter": [
+          "**/*"
+        ]
+      }
     ]
+  },
+  "allowScripts": {
+    "electron": true,
+    "esbuild": true,
+    "electron-winstaller": true
   }
 }
