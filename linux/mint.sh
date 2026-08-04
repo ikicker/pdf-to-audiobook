@@ -24,6 +24,9 @@ sudo apt install objdump
 # FUSE setup
 sudo apt install fuse libfuse2   # if it's a Debian/Ubuntu-based distrobox
 
+# NSPR/NSS setup
+sudo apt install libnspr4 libnss3
+
 if false
 then
 echo Removing virtual environment and recreating...
