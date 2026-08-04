@@ -1,10 +1,10 @@
 # PDF to Audiobook Converter
 Support development of this project: ko-fi.com/michael2281
 
-**The front end currently works, but the back end can be accessed directly, also. You can just use pdf_to_audiobook.py directly to convert the pdf to the audiobook mp3. A UI just creates additional complications for code maintenance, but is useful for ordinary users. 
-To do:
+**The front end currently works, but the back end can be accessed directly, also. You can just use pdf_to_audiobook.py directly to convert the pdf to the audiobook mp3. A UI just creates additional complications for code maintenance, but is useful for ordinary users.** 
+Notes:
 - Working on simplifying the setup
-- Working on a Linux version**
+- Working on a Linux version
 
 Convert PDF documents into high-quality MP3 or WAV audiobooks using **Kokoro TTS** (recommended) or **Parler-TTS**.
 
