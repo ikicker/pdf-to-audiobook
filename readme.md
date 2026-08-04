@@ -1,6 +1,8 @@
 # PDF to Audiobook Converter
 Support development of this project: ko-fi.com/michael2281
 
+We only tested this on Windows. I'm trying to get a Linux version up and running now.
+
 Convert PDF documents into high-quality MP3 or WAV audiobooks using **Kokoro TTS** (recommended) or **Parler-TTS**.
 
 This tool extracts text from PDFs, splits it into natural chunks, generates speech with modern open-source TTS models, adds natural pauses, and combines everything into a single audio file — perfect for books, articles, lectures, and long-form reading.
