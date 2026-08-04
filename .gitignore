@@ -1,5 +1,5 @@
 # Binaries and large files
-ffmpeg/
+# ffmpeg/
 *.mp3
 *.wav
 *.pdf
