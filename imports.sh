@@ -8,8 +8,8 @@ IFS=$'\n\t'
 #if false
 #then
 echo Removing virtual environment and recreating...
-rm -r audiobook_env
-C:/Python312/python -m venv audiobook_env
+rm -rf audiobook_env
+~/AppData/Local/Programs/Python/Python312/python -m venv audiobook_env
 #fi
 source audiobook_env/Scripts/activate
 #if false
@@ -18,12 +18,12 @@ echo Installing needed Python packages...
 audiobook_env/Scripts/python -m pip install --upgrade pip setuptools wheel
 audiobook_env/Scripts/pip install .
 audiobook_env/Scripts/pip install torch torchaudio
+export NLTK_DISABLE_IMPORT_SECURITY=1
 audiobook_env/Scripts/python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
 # audiobook_env/Scripts/pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
 pip install pip-audit
 echo Doing Python security audit...
 pip-audit
-#fi
 
 # Node.js setup
 unset NODE_OPTIONS
@@ -36,7 +36,10 @@ npm audit
 npm audit fix
 echo Installing Node.js modules --ignore scripts...
 npm ci --ignore-scripts
+echo "Running electron install script"
+node node_modules/electron/install.js
 echo Running graphical user interface
+# fi
 npm run dev
 
 npm run build       # compile TypeScript + bundle Vite

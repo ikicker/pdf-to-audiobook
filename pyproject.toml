@@ -16,8 +16,7 @@ dependencies = [
     "numpy>=1.26",
     "soundfile>=0.12",
     "pydub>=0.25",
-    "kokoro>=0.9.4",            # main TTS engine
-    "PySide6"
+    "kokoro>=0.9.4"            # main TTS engine
     # torch is intentionally not pinned here because users often choose CPU vs CUDA version
     # see installation instructions in README.md for torch install
 ]
