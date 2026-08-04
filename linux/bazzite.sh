@@ -24,8 +24,6 @@ sudo dnf install objdump
 # FUSE setup
 sudo dnf install fuse fuse-libs  # if it's a Fedora-based distrobox
 
-if false
-then
 echo Removing virtual environment and recreating...
 rm -rf "$VENV"
 python3.12 -m venv "$VENV"
@@ -44,7 +42,6 @@ $PYTHON -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
 $PIP install pip-audit
 echo Doing Python security audit...
 pip-audit
-fi
 
 # Node.js setup
 unset NODE_OPTIONS
