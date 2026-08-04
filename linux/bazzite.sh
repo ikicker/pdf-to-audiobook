@@ -14,10 +14,15 @@ fc-cache -f
 sudo dnf install python312
 
 # ffmpeg setup
-
 sudo dnf reinstall samba-client-libs samba-common-libs libsmbclient
 sudo ldconfig
 sudo dnf install ffmpeg
+
+# pyinstaller setup
+sudo dnf install objdump
+
+# FUSE setup
+sudo dnf install fuse fuse-libs  # if it's a Fedora-based distrobox
 
 if false
 then

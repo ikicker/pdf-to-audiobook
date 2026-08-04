@@ -18,6 +18,12 @@ sudo apt install samba-client-libs samba-common-libs libsmbclient
 sudo ldconfig
 sudo apt install ffmpeg
 
+# pyinstaller setup
+sudo apt install objdump
+
+# FUSE setup
+sudo apt install fuse libfuse2   # if it's a Debian/Ubuntu-based distrobox
+
 if false
 then
 echo Removing virtual environment and recreating...
