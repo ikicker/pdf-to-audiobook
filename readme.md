@@ -1,7 +1,7 @@
 # PDF to Audiobook Converter
 Support development of this project: ko-fi.com/michael2281
 
-**The front end currently works on Windows, but the back end can be accessed directly, also via terminal.**
+**The front end currently works on only Windows, but the back end can be accessed directly, also via terminal.**
 
 Notes:
 - Working on simplifying the setup
