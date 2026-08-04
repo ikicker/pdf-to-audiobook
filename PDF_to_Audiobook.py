@@ -21,9 +21,23 @@ nltk.download('punkt_tab', quiet=True)
 
 
 class AudiobookConverter:
-    def __init__(self, config_path: str = "pyproject.toml"):
+    def __init__(self, config_path: str = "pyproject.toml", device: str = None):
         self.config = self._load_config(config_path)
         self._setup_ffmpeg()
+
+        # Resolve device: explicit arg > config file > default "cpu"
+        self.device = device or self.config.get("tts", {}).get("device", "cpu")
+
+        if self.device == "cpu":
+            # Force CPU *before* any CUDA context can be created. Some libs
+            # (kokoro included) probe torch.cuda.is_available() internally
+            # regardless of a device kwarg, so hiding the GPU from the
+            # process is the only reliable way to guarantee no CUDA/cuDNN
+            # init is attempted. Necessary on GPUs below SM 7.5 (e.g. GTX
+            # 900/Maxwell series), which recent cuDNN releases no longer
+            # support.
+            os.environ["CUDA_VISIBLE_DEVICES"] = ""
+        print(f"🖥️  Using device: {self.device}")
 
     def _load_config(self, config_path: str) -> dict:
         """Load configuration from pyproject.toml"""
@@ -131,7 +145,16 @@ class AudiobookConverter:
         if engine == "kokoro":
             from kokoro import KPipeline
             lang_code = tts_section.get("language_code", "a")
-            pipeline = KPipeline(lang_code=lang_code)
+
+            try:
+                # Newer kokoro versions accept a device kwarg directly.
+                pipeline = KPipeline(lang_code=lang_code, device=self.device)
+            except TypeError:
+                # Older versions don't accept device= at all; CUDA is
+                # already hidden via CUDA_VISIBLE_DEVICES above, so this
+                # will fall back to CPU on its own.
+                pipeline = KPipeline(lang_code=lang_code)
+
             self.tts = {
                 "engine": "kokoro",
                 "pipeline": pipeline,
@@ -197,13 +220,21 @@ class AudiobookConverter:
 
 # ====================== CLI Entry Point ======================
 if __name__ == "__main__":
-    converter = AudiobookConverter()
-
     parser = argparse.ArgumentParser(description="PDF to Audiobook Converter")
     parser.add_argument("pdf", type=str, nargs="?", help="Path to input PDF")
     parser.add_argument("out", type=str, nargs="?", help="Output audio file")
     parser.add_argument("--voice", type=str, help="Voice to use (e.g. af_heart, am_adam)")
+    parser.add_argument(
+        "--device",
+        type=str,
+        choices=["cpu", "cuda"],
+        default="cpu",
+        help="Compute device for TTS inference (default: cpu). "
+             "Use cuda only on GPUs with compute capability >= 7.5.",
+    )
     args = parser.parse_args()
+
+    converter = AudiobookConverter(device=args.device)
 
     if args.pdf:
         # CLI mode

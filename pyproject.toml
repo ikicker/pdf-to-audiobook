@@ -42,6 +42,10 @@ testpaths = ["tests"]
 [tool.hatch.metadata]
 allow-direct-references = true
 
+[tool.hatch.build.targets.wheel]
+packages = ["src", "electron"]
+
+
 # ────────────────────────────────────────────────
 # Custom application settings (used by pdf_to_audiobook.py)
 # ────────────────────────────────────────────────
@@ -62,9 +66,9 @@ max_words_per_chunk = 350
 pause_between_chunks_sec = 0.6
 
 [tool.pdf-to-audiobook.external_tools]
-ffmpeg  = "./ffmpeg/bin/ffmpeg.exe"
-ffprobe = "./ffmpeg/bin/ffprobe.exe"
-ffplay = "./ffmpeg/bin/ffplay.exe"
+ffmpeg  = "ffmpeg"
+ffprobe = "ffprobe"
+ffplay = "ffplay"
 
 [dropdowns]
 voices = [

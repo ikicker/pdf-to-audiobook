@@ -2,34 +2,49 @@
 # Safe execution environment for bash
 set -euo pipefail
 IFS=$'\n\t'
+VENV=audiobook_env
+PYBIN=bin
+PYTHON="$VENV/$PYBIN/python3.12"
+PIP="$VENV/$PYBIN/pip3.12"
+
+sudo dnf install -y xkeyboard-config fontconfig dbus-x11
+fc-cache -f
 
 # Python setup
 sudo dnf install python312
 
-#if false
-#then
+# ffmpeg setup
+
+sudo dnf reinstall samba-client-libs samba-common-libs libsmbclient
+sudo ldconfig
+sudo dnf install ffmpeg
+
+if false
+then
 echo Removing virtual environment and recreating...
-rm -rf audiobook_env
-python3.12 -m venv audiobook_env
-#fi
-source audiobook_env/bin/activate
-#if false
-#then
+rm -rf "$VENV"
+python3.12 -m venv "$VENV"
+source "$VENV/$PYBIN/activate"
 echo Installing needed Python packages...
-audiobook_env/bin/python3.12 -m pip install --upgrade pip setuptools wheel
-audiobook_env/bin/pip3.12 install .
-audiobook_env/bin/pip3.12 install torch torchaudio
+$PYTHON -m pip install --upgrade pip setuptools wheel
+
+$PIP install .
+# $PIP install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
+$PIP uninstall torch torchvision torchaudio -y
+$PIP install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+
 export NLTK_DISABLE_IMPORT_SECURITY=1
-audiobook_env/bin/python3.12 -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
-# audiobook_env/bin/pip3.12 install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
-pip3.12 install pip-audit
+$PYTHON -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
+$PIP install pip-audit
 echo Doing Python security audit...
 pip-audit
+fi
 
 # Node.js setup
 unset NODE_OPTIONS
 echo Removing Node.js modules...
-rm -r node_modules
+rm -rf node_modules
 echo Installing Node.js package-lock.json ...
 npm install --package-lock-only
 echo Auditing Node.js modules...
@@ -40,7 +55,6 @@ npm ci --ignore-scripts
 echo "Running electron install script"
 node node_modules/electron/install.js
 echo Running graphical user interface
-# fi
 npm run dev
 
 npm run build       # compile TypeScript + bundle Vite
