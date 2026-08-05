@@ -16,6 +16,7 @@ import {
   shell,
   IpcMainInvokeEvent,
 } from 'electron'
+import path from 'node:path'
 import { join, dirname, basename, extname } from 'path'
 import { spawn, ChildProcess } from 'child_process'
 import { readdirSync } from 'fs'
@@ -237,6 +238,26 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
 
+function getPythonPath() {
+  if (app.isPackaged) {
+    // matches your extraResources: audiobook_env → resources/audiobook_env
+    return process.platform === 'win32'
+        ? path.join(process.resourcesPath, 'audiobook_env', 'Scripts', 'python.exe')
+    	: path.join(process.resourcesPath, 'audiobook_env', 'bin', 'python');
+  }
+  // dev mode — project root
+  return process.platform === 'win32'
+  	? path.join(app.getAppPath(), 'audiobook_env', 'Scripts', 'python')
+  	: path.join(app.getAppPath(), 'audiobook_env', 'bin', 'python');
+}
+
+function getScriptPath() {
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, 'PDF_to_Audiobook.py')
+  }
+  return path.join(app.getAppPath(), 'PDF_to_Audiobook.py')
+}
+
 // ─── Helper: spawn Python conversion process ──────────────────────────────────
 function spawnConversion(
   jobId: string,
@@ -248,24 +269,12 @@ function spawnConversion(
   onError?: (err: string) => void,
 ): void {
   // Determine Python executable — support venv or system Python
-  let pythonExe = null;
-  let scriptPath = null;
-  if (app.isPackaged) {
-    // Production logic
-      pythonExe = process.platform === 'win32'
-        ? join(process.cwd(), 'resources', 'audiobook_env', 'Scripts', 'python.exe')
-        : join(process.cwd(), 'resources', 'audiobook_env', 'bin', 'python')
-      scriptPath = join(process.cwd(), 'resources', 'PDF_to_Audiobook.py')
-  } else {
-    // Development logic
-      pythonExe = process.platform === 'win32'
-        ? join(process.cwd(), 'audiobook_env', 'Scripts', 'python.exe')
-        : join(process.cwd(), 'audiobook_env', 'bin', 'python')
-      scriptPath = join(process.cwd(), 'PDF_to_Audiobook.py')
-  }
-
+  let pythonExe = getPythonPath();
+  const pythonExecutable = path.join(process.resourcesPath, 'PDF_to_Audiobook');
+  let scriptPath = getScriptPath();
 
   const args =[scriptPath, inputFile, outputFile, '--voice', voice]
+  // const args =[inputFile, outputFile, '--voice', voice]
 
   markRunning(jobId)
   win.webContents.send('conversion:progress', { jobId, progress: 0, message: 'Starting…' })
@@ -279,6 +288,7 @@ function spawnConversion(
     env: {
       ...process.env,               // Keep all existing environment variables
       PYTHONIOENCODING: 'utf-8',    // Force Python to output in UTF-8 so emojis don't crash it!
+      NLTK_DISABLE_IMPORT_SECURITY: '1',
     }
   })
 
@@ -321,7 +331,7 @@ function spawnConversion(
     } else {
       const errMsg = stderrBuf.trim() || `Process exited with code ${code}`
 
-      console.error(pythonExe, args, stderrBuf.trim(), '\n=== PYTHON CRASHED ===\n', errMsg, '\n======================\n')
+      console.error(pythonExe, ...args, stderrBuf.trim(), '\n=== PYTHON CRASHED ===\n', errMsg, '\n======================\n')
 
       /*
       win.webContents.executeJavaScript('document.getElementById("root").innerHTML = "<div>'+

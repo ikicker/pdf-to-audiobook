@@ -1,5 +1,5 @@
 # Binaries and large files
-ffmpeg/
+# ffmpeg/
 *.mp3
 *.wav
 *.pdf
@@ -21,7 +21,7 @@ fresh_audiobook_env/
 # TypeScript
 node_modules
 release
-out
+# out
 build
 dist
 resources

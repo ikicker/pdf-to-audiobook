@@ -1,6 +1,7 @@
 {
   "name": "pdf-to-audiobook",
-  "version": "1.0.0",
+  "desktopName": "com.ikicker.pdf-to-audiobook",
+  "version": "2.0.0",
   "description": "Convert PDF documents to high-quality audiobooks using Kokoro TTS",
   "main": "out/main/index.js",
   "author": "Inner Ninja",
@@ -8,12 +9,12 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
-    "build:python1": "pyinstaller --onedir PDF_to_Audiobook.py && electron-builder",
+    "build:python1": "NLTK_DISABLE_IMPORT_SECURITY=1 audiobook_env/bin/pyinstaller --onedir PDF_to_Audiobook.py && electron-builder",
     "preview": "electron-vite preview",
-    "package": "electron-vite build && electron-builder",
-    "package:win": "electron-vite build && electron-builder --win",
-    "package:mac": "electron-vite build && electron-builder --mac",
-    "package:linux": "electron-vite build && electron-builder --linux"
+    "package": "NLTK_DISABLE_IMPORT_SECURITY=1 audiobook_env/bin/pyinstaller --onedir PDF_to_Audiobook.py && electron-vite build && electron-builder",
+    "package:win": "NLTK_DISABLE_IMPORT_SECURITY=1 audiobook_env/Scripts/pyinstaller --onedir PDF_to_Audiobook.py && electron-vite build && electron-builder --win",
+    "package:mac": "NLTK_DISABLE_IMPORT_SECURITY=1 audiobook_env/bin/pyinstaller --onedir PDF_to_Audiobook.py && electron-vite build && electron-builder --mac",
+    "package:linux": "NLTK_DISABLE_IMPORT_SECURITY=1 audiobook_env/bin/pyinstaller --onedir PDF_to_Audiobook.py && electron-vite build && electron-builder --linux"
   },
   "dependencies": {
     "smol-toml": "1.6.1"
@@ -37,12 +38,15 @@
     "directories": {
       "output": "release"
     },
+    "asar": true,
     "files": [
       "out/**/*",
       "PDF_to_Audiobook.py",
       "pyproject.toml",
-      "ffmpeg/**/*",
       "audiobook_env/**/*"
+    ],
+    "asarUnpack": [
+      "ffmpeg/**/*"
     ],
     "win": {
       "target": "nsis",
@@ -53,8 +57,10 @@
       "icon": "resources/icon.icns"
     },
     "linux": {
-      "target": "AppImage",
-      "icon": "frm_Main/icon.png"
+      "target": ["AppImage"],
+      "icon": "frm_Main/favicon.png",
+      "category": "Utility",
+      "maintainer": "Inner Ninja <your-email@example.com>"
     },
     "nsis": {
       "oneClick": false,
@@ -76,19 +82,16 @@
         "to": "PDF_to_Audiobook.py"
       },
       {
+        "from": "dist/PDF_to_Audiobook", 
+        "to": "PDF_to_Audiobook" 
+      },
+      {
         "from": "pyproject.toml",
         "to": "pyproject.toml"
       },
       {
         "from": "ffmpeg",
         "to": "ffmpeg",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "out",
-        "to": "out",
         "filter": [
           "**/*"
         ]
