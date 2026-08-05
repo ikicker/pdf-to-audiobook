@@ -47,8 +47,10 @@ python3.12 -m venv "$VENV"
 source "$VENV/$PYBIN/activate"
 echo Installing needed Python packages...
 $PYTHON -m pip install --upgrade pip setuptools wheel
+$PYTHON -m spacy download en_core_web_sm
 
 $PIP install .
+$PIP install pyinstaller
 # $PIP install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
 $PIP uninstall torch torchvision torchaudio -y
 $PIP install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
@@ -68,4 +70,5 @@ npm run package     # wrap with electron-builder (auto-detects platform)
 #npm run package:win
 #npm run package:mac
 #npm run package:linux
-"release/linux-unpacked/PDF to Audiobook"
+"release/PDF to Audiobook-2.0.0.AppImage"
+

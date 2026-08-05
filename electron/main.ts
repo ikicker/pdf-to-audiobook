@@ -270,9 +270,11 @@ function spawnConversion(
 ): void {
   // Determine Python executable — support venv or system Python
   let pythonExe = getPythonPath();
+  const pythonExecutable = path.join(process.resourcesPath, 'PDF_to_Audiobook');
   let scriptPath = getScriptPath();
 
   const args =[scriptPath, inputFile, outputFile, '--voice', voice]
+  // const args =[inputFile, outputFile, '--voice', voice]
 
   markRunning(jobId)
   win.webContents.send('conversion:progress', { jobId, progress: 0, message: 'Starting…' })
