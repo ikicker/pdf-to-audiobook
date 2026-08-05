@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/usr/bin/env bash
 # Safe execution environment for bash
 set -euo pipefail
 IFS=$'\n\t'
@@ -25,15 +25,15 @@ sudo apt install -y xkb-data fontconfig dbus-x11
 fc-cache -f
 
 # Python setup
-sudo apt install python312
+sudo apt install python3.12
+
+# Node setup
+sudo apt install npm
 
 # ffmpeg setup
-sudo apt install samba-client-libs samba-common-libs libsmbclient
+sudo apt install libsmbclient0
 sudo ldconfig
 sudo apt install ffmpeg
-
-# pyinstaller setup
-sudo apt install objdump
 
 # FUSE setup
 sudo apt install fuse libfuse2   # if it's a Debian/Ubuntu-based distrobox
@@ -42,22 +42,28 @@ sudo apt install fuse libfuse2   # if it's a Debian/Ubuntu-based distrobox
 sudo apt install libnspr4 libnss3
 
 echo Removing virtual environment and recreating...
+sudo apt install python3.12-venv
+
 rm -rf "$VENV"
 python3.12 -m venv "$VENV"
 source "$VENV/$PYBIN/activate"
+
+echo setting up uv
+$PIP install uv
+
 echo Installing needed Python packages...
 $PYTHON -m pip install --upgrade pip setuptools wheel
 $PYTHON -m spacy download en_core_web_sm || echo "Couldn't find spacy"
 
-$PIP install .
-$PIP install pyinstaller
-$PIP uninstall torch torchvision torchaudio -y
-# $PIP install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
-$PIP install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+uv pip install .
+uv pip install pyinstaller
+uv pip uninstall torch torchvision torchaudio -y
+# uv pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
+uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
 export NLTK_DISABLE_IMPORT_SECURITY=1
 $PYTHON -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
-$PIP install pip-audit
+uv pip install pip-audit
 echo Doing Python security audit...
 pip-audit || echo "========  Audit failed!  Check results"
 

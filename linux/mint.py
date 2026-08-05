@@ -71,22 +71,24 @@ def main():
     run(["sudo", "apt", "install", "-y", "xkb-data", "fontconfig", "dbus-x11"])
     run(["fc-cache", "-f"])
 
+    # Node setup
+    run(["sudo", "apt", "install", "npm"])
+
     # Python setup
-    run(["sudo", "apt", "install", "python312"])
+    run(["sudo", "apt", "install", "python3.12"])
 
     # ffmpeg setup
-    run(["sudo", "apt", "install", "samba-client-libs", "samba-common-libs", "libsmbclient"])
+    run(["sudo", "apt", "install", "libsmbclient0"])
     run(["sudo", "ldconfig"])
     run(["sudo", "apt", "install", "ffmpeg"])
-
-    # pyinstaller setup
-    run(["sudo", "apt", "install", "objdump"])
 
     # FUSE setup
     run(["sudo", "apt", "install", "fuse", "libfuse2"])  # Debian/Ubuntu-based distrobox
 
     # NSPR/NSS setup
     run(["sudo", "apt", "install", "libnspr4", "libnss3"])
+
+    run(["sudo", "apt", "install", "python3.12-venv"])
 
     # ---- Python virtual environment ----
     step("Removing virtual environment and recreating...")
