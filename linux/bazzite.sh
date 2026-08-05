@@ -51,8 +51,8 @@ $PYTHON -m spacy download en_core_web_sm || echo "Couldn't find spacy"
 
 $PIP install .
 $PIP install pyinstaller
-# $PIP install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
 $PIP uninstall torch torchvision torchaudio -y
+# $PIP install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
 $PIP install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
 export NLTK_DISABLE_IMPORT_SECURITY=1

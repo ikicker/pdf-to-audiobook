@@ -331,7 +331,7 @@ function spawnConversion(
     } else {
       const errMsg = stderrBuf.trim() || `Process exited with code ${code}`
 
-      console.error(pythonExe, args, stderrBuf.trim(), '\n=== PYTHON CRASHED ===\n', errMsg, '\n======================\n')
+      console.error(pythonExe, ...args, stderrBuf.trim(), '\n=== PYTHON CRASHED ===\n', errMsg, '\n======================\n')
 
       /*
       win.webContents.executeJavaScript('document.getElementById("root").innerHTML = "<div>'+
