@@ -22,3 +22,5 @@ Perhaps fixed 4. In Windows 11, queue is trying to be created under a protected 
 
 	If running in the development environment, this works, not production
 4. Electron install doesn't work with Python .exe yet.
+
+5.  Add instructions on how to git clone and build distrobox
