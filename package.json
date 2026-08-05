@@ -9,12 +9,12 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
-    "build:python1": "pyinstaller --onedir PDF_to_Audiobook.py && electron-builder",
+    "build:python1": "NLTK_DISABLE_IMPORT_SECURITY=1 audiobook_env/bin/pyinstaller --onedir PDF_to_Audiobook.py && electron-builder",
     "preview": "electron-vite preview",
-    "package": "electron-vite build && electron-builder",
-    "package:win": "electron-vite build && electron-builder --win",
-    "package:mac": "electron-vite build && electron-builder --mac",
-    "package:linux": "electron-vite build && electron-builder --linux"
+    "package": "NLTK_DISABLE_IMPORT_SECURITY=1 audiobook_env/bin/pyinstaller --onedir PDF_to_Audiobook.py && electron-vite build && electron-builder",
+    "package:win": "NLTK_DISABLE_IMPORT_SECURITY=1 audiobook_env/Scripts/pyinstaller --onedir PDF_to_Audiobook.py && electron-vite build && electron-builder --win",
+    "package:mac": "NLTK_DISABLE_IMPORT_SECURITY=1 audiobook_env/bin/pyinstaller --onedir PDF_to_Audiobook.py && electron-vite build && electron-builder --mac",
+    "package:linux": "NLTK_DISABLE_IMPORT_SECURITY=1 audiobook_env/bin/pyinstaller --onedir PDF_to_Audiobook.py && electron-vite build && electron-builder --linux"
   },
   "dependencies": {
     "smol-toml": "1.6.1"
@@ -38,6 +38,7 @@
     "directories": {
       "output": "release"
     },
+    "asar": true,
     "files": [
       "out/**/*",
       "PDF_to_Audiobook.py",
@@ -79,6 +80,10 @@
       {
         "from": "PDF_to_Audiobook.py",
         "to": "PDF_to_Audiobook.py"
+      },
+      {
+        "from": "dist/PDF_to_Audiobook", 
+        "to": "PDF_to_Audiobook" 
       },
       {
         "from": "pyproject.toml",

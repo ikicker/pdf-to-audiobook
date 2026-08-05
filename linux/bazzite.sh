@@ -47,7 +47,7 @@ python3.12 -m venv "$VENV"
 source "$VENV/$PYBIN/activate"
 echo Installing needed Python packages...
 $PYTHON -m pip install --upgrade pip setuptools wheel
-$PYTHON -m spacy download en_core_web_sm
+$PYTHON -m spacy download en_core_web_sm || echo "Couldn't find spacy"
 
 $PIP install .
 $PIP install pyinstaller
@@ -59,7 +59,7 @@ export NLTK_DISABLE_IMPORT_SECURITY=1
 $PYTHON -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
 $PIP install pip-audit
 echo Doing Python security audit...
-pip-audit
+pip-audit || echo "========  Audit failed!  Check results"
 
 echo Running graphical user interface
 npm run dev
@@ -71,4 +71,3 @@ npm run package     # wrap with electron-builder (auto-detects platform)
 #npm run package:mac
 #npm run package:linux
 "release/PDF to Audiobook-2.0.0.AppImage"
-
