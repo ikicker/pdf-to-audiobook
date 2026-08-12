@@ -8,7 +8,7 @@ So we made this to assist disabled or older people with reading text, but anyone
 Notes:
 - Working on simplifying the setup
 - Working on a Linux version
-- Working on release in EXE format
+- Working on release in EXE format and Appimage
 
 Convert PDF documents into high-quality MP3 or WAV audiobooks using **Kokoro TTS** (recommended) or **Parler-TTS**.
 
