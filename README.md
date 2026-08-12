@@ -1,6 +1,8 @@
 # PDF to Audiobook Converter
 Support development of this project: ko-fi.com/michael2281
 
+So we made this to assist disabled or older people with reading text, but anyone can use it, including to aid in study.
+
 **The front end currently works on only Windows, but the back end can be accessed directly, also via terminal.**
 
 Notes:
