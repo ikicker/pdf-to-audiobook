@@ -3,12 +3,13 @@ Support development of this project: ko-fi.com/michael2281
 
 So we made this to assist disabled or older people with reading text, but anyone can use it, including to aid in study.
 
-**The front end currently works on only Windows, but the back end can be accessed directly, also via terminal.**
+**The front end currently works on Windows and Linux, but the back end can be accessed directly, also via terminal.**
 
 Notes:
 - Working on simplifying the setup
 - Working on a Linux version
 - Working on release in EXE format and Appimage
+- Working on Uninstaller
 
 Convert PDF documents into high-quality MP3 or WAV audiobooks using **Kokoro TTS** (recommended) or **Parler-TTS**.
 
