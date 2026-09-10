@@ -77,7 +77,7 @@ Recommended: create ./ffmpeg/bin/ in the project root and place ffmpeg.exe + ffp
 Or add them to your system PATH
 Update the paths in pyproject.toml if needed (under [tool.pdf-to-audiobook.external_tools])
 
-##How do you run it?
+## How do you run it?
 ```python
 from pdf_to_audiobook import AudiobookConverter
 
@@ -90,7 +90,7 @@ converter = AudiobookConverter()
     voice="am_adam"          # optional - will use default from toml if None
 )```
 
-# Simple installation osx
+## Simple installation osx
 ```cd /path/to/macos
 bash install.sh```
 
