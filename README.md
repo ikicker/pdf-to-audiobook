@@ -81,7 +81,7 @@ Update the paths in pyproject.toml if needed (under [tool.pdf-to-audiobook.exter
 ```python
 from pdf_to_audiobook import AudiobookConverter
 
-converter = AudiobookConverter()
+converter = AudiobookConverter()```
 
 # Call the method directly with parameters
 ```converter.pdf_to_audio(
