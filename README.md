@@ -90,7 +90,7 @@ converter = AudiobookConverter()
     voice="am_adam"          # optional - will use default from toml if None
 )```
 
-## Simple installation osx
+# Simple installation osx
 ```cd /path/to/macos
 bash install.sh```
 
