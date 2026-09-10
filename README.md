@@ -37,6 +37,20 @@ This tool extracts text from PDFs, splits it into natural chunks, generates spee
   Download Windows binary from: https://github.com/espeak-ng/espeak-ng/releases  
   Add to PATH (or configure in `pyproject.toml`)
 
+## Installation osx (no UI)
+```
+cd /path/to/macos
+bash install.sh
+```
+
+```
+pdf-to-audiobook ~/Documents/book.pdf ~/Desktop/book.mp3 --voice am_adam
+```
+
+## Installation Linux
+
+## Installation Windows
+
 ## Installation developer
 
 1. Clone or download the project folder
@@ -91,12 +105,4 @@ converter.pdf_to_audio(
     voice="am_adam"          # optional - will use default from toml if None
 )
 ```
-## Simple installation osx
-```
-cd /path/to/macos
-bash install.sh
-```
 
-```
-pdf-to-audiobook ~/Documents/book.pdf ~/Desktop/book.mp3 --voice am_adam
-```
