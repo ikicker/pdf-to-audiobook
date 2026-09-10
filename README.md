@@ -6,6 +6,7 @@ So we made this to assist disabled or older people with reading text, but anyone
 **The front end currently works on Windows and Linux, but the back end can be accessed directly, also via terminal.**
 
 Notes:
+- Added a osx installer and uninstaller, but the UI does not run on osx.
 - Working on simplifying the setup
 - Working on a Linux version
 - Working on release in EXE format and Appimage
