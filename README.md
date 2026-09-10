@@ -84,11 +84,11 @@ from pdf_to_audiobook import AudiobookConverter
 converter = AudiobookConverter()
 
 # Call the method directly with parameters
-converter.pdf_to_audio(
+```converter.pdf_to_audio(
     pdf_path="Biblical-Healing.pdf",
     output_path="my_audiobook.mp3",
     voice="am_adam"          # optional - will use default from toml if None
-)
+)```
 
 ## Simple installation osx
 ```cd /path/to/macos
