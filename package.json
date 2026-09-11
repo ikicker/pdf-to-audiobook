@@ -17,7 +17,7 @@
     "package:linux": "set NLTK_DISABLE_IMPORT_SECURITY=1 audiobook_env/bin/pyinstaller --onedir PDF_to_Audiobook.py && electron-vite build && electron-builder --linux"
   },
   "dependencies": {
-    "smol-toml": "1.6.1"
+    "smol-toml": "1.7.1"
   },
   "devDependencies": {
     "@types/node": "25.5.0",
