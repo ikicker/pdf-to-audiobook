@@ -120,6 +120,7 @@ class AudiobookConverter:
         audio_segments = []
         pause_sec = self.config.get("processing", {}).get("pause_between_chunks_sec", 0.6)
         pause_ms = int(pause_sec * 1000)
+        pause = self._silence(pause_ms, sample_rate=24000)
 
         for chunk in tqdm(chunks, desc="Generating"):
             if not chunk.strip():
@@ -128,7 +129,8 @@ class AudiobookConverter:
             if len(audio_np) > 0:
                 segment = self._numpy_to_audio_segment(audio_np, sr)
                 audio_segments.append(segment)
-                audio_segments.append(AudioSegment.silent(duration=pause_ms))
+                if pause_ms > 0:
+                    audio_segments.append(pause if pause.frame_rate == sr else self._silence(pause_ms, sr))
 
         if not audio_segments:
             print("❌ No audio generated.")
@@ -156,7 +158,7 @@ class AudiobookConverter:
 
         print(f"\n✅ Success! Audiobook saved to: {out_path}")
         print(f"   Duration: {len(final_audio)/1000:.1f} seconds")
-        return str(out_path)
+        return final_audio
 
     def convert(self, input_path: str = None, output_path: str = None, voice: str = None, pdf_path: str = None, **kwargs):
         """
@@ -323,6 +325,18 @@ class AudiobookConverter:
             sample_width=2,
             frame_rate=sample_rate,
             channels=1
+        )
+
+    def _silence(self, duration_ms: int, sample_rate: int = 24000) -> AudioSegment:
+        """Build a silent segment. Does not use AudioSegment.silent (11025 Hz default)."""
+        if AudioSegment is None:
+            raise RuntimeError("pydub AudioSegment is not available; install pydub and ffmpeg.")
+        frames = int(sample_rate * (duration_ms / 1000.0))
+        return AudioSegment(
+            data=b"\x00\x00" * frames,
+            sample_width=2,
+            frame_rate=sample_rate,
+            channels=1,
         )
 
 
