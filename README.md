@@ -1,19 +1,18 @@
 # PDF to Audiobook Converter
-Support development of this project: ko-fi.com/michael2281
-![pdf to audiobook](pdf-to-audiobook.png)
-
 Support development of this project: [ko-fi.com/michael2281](https://ko-fi.com/michael2281)
 
 This project is an Open Source Eleven Labs alternative made to help disabled or older people with reading text. Anyone can use it, including for study. Convert your PDF, Epub, and Text files into mp3 and wav.
+
+![pdf to audiobook](pdf-to-audiobook.png)
 
 **The front end currently works on Windows, Linux, and Newer Macs. The back end can also be used directly from the terminal on Windows, macOS, and Linux.**
 
 Notes from upstream:
 
-- There is a macOS installer and uninstaller. The Electron UI does not run on older macOS (for example Monterey on a 2014 Intel Mac mini).
-- Working on Epub, plain text and document support.
+- Successfully its been run on Windows, Linux and Mac OS. The installation is slightly different on each.
+- I've added Epub and text conversion as well.
 
-Convert PDF documents into high-quality MP3 or WAV audiobooks using **Kokoro TTS** (recommended) or **Parler-TTS**.
+Convert PDF documents into high-quality MP3 or WAV audiobooks using the **Kokoro TTS** model (recommended) or **Parler-TTS** model.
 
 Linux notes:
 - Build scripts are in linux/.
